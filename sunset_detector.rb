@@ -1,6 +1,7 @@
 require './count_colors'
 require 'fileutils'
 require 'open3'
+require 'restclient'
 
 class SunsetDetector
   attr_accessor :how_often_to_take_a_picture, :sunsettiness_threshold, :interface
@@ -39,6 +40,18 @@ class SunsetDetector
     FileUtils.move("00000001.jpg", "sunset_#{time}.jpg")
     "sunset_#{time}.jpg"
   end
+end
+
+
+
+def tweet(status, photo_filename)
+  url = "https://api.twitter.com/1.1/statuses/update_with_media.json"
+  info = {}
+  info["status"] = status
+  info["lat"] = 40.706996
+  info["long"] = -74.013283
+  info["media[]"] = open(photo_filename, 'r').read
+  RestClient.post(url, info, :multipart => true)
 end
 
 s = SunsetDetector.new do |bool| 
