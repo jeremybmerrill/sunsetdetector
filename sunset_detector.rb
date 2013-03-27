@@ -7,7 +7,6 @@ require 'twitter'
 # tweet pictures of sunsets; wait five minutes, if picture n is less sunsetty than picture n-1, tweet picture n-1
 # eventually, rate all of the tweeted sunsets, use that as training data.
 
-
 class SunsetDetector
   attr_accessor :how_often_to_take_a_picture, :sunsettiness_threshold, :interface
 
@@ -20,7 +19,7 @@ class SunsetDetector
       config.oauth_token_secret = authdetails[3]
     end
 
-    self.how_often_to_take_a_picture = 0.25 #minutes
+    self.how_often_to_take_a_picture = 5 #minutes
     self.sunsettiness_threshold = 0.1
 
     c = ColorCounter.new
@@ -55,7 +54,7 @@ class SunsetDetector
   end
 end
 
-def tweet(status, photo_filename)
+def tweetpic(status, photo_filename)
   info = {}
   info["lat"] = 40.706996
   info["long"] = -74.013283
@@ -68,9 +67,12 @@ s = SunsetDetector.new do |bool, filename=nil|
     #delete day-old (or older) non-sunset pics.    
     old_sunsets = Dir.glob("not_a_sunset*")
     old_sunsets.filter{|filename| filename.gsub("not_a_sunset_", "").gsub(".jpg", "").to_i < (Time.now.to_i - 60*60*24)}.each{|f| FileUtils.rm(f) }
-    tweet("here's tonight's sunset: ", )
+    
+    #TODO: wait until picture N is less sunsetty than picture N-1, then tweet picture N-1.
+    tweetpic("here's tonight's sunset: ", filename)
   else
     puts "nope, no sunset"
+    #TODO: tweet that there's no sunset at 10pm if there hasn't been a good sunset.
     FileUtils.move(filename, "not_a_#{filename}") unless filename.nil?
   end
 end
