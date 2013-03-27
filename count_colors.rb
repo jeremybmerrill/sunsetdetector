@@ -36,20 +36,38 @@ class ColorCounter
     new_image.display
   end
 
-  def ColorCounter.count_colors(photo_filename)
-    #ColorCounter.highlight_sunsety_colors(photo_filename)
-    histogram = `convert  #{photo_filename}  -format %c  -depth 8  histogram:info:-`
-    histogram_lines = histogram.split("\n")
-            #        11: ( 98, 72, 83) #624853 srgb(98,72,83)
-    #puts "#{histogram_lines.count} distinct colors in #{photo_filename}"
-    rgbs = histogram_lines.map do |hist_item|
-      #3: (255,255,235) #FFFFEB srgb(255,255,235)
-      count = hist_item[0...hist_item.index(":")].strip.to_i
-      color_str = hist_item[hist_item.index(":") + 1..hist_item.index(") ")].strip
-      colors = eval(color_str.gsub("(", "[").gsub(")", "]"))
-      [colors, count]
-    end
-    results = rgbs.group_by {|color, count| ColorCounter.is_sunsety(color) }.map{|bool, list| [bool, list.inject(0){|memo, color_count| memo + color_count[1]}]}
-    return Hash[*results.flatten]
+  # def ColorCounter.count_colors(photo_filename)
+  #   #ColorCounter.highlight_sunsety_colors(photo_filename)
+  #   histogram = `convert  #{photo_filename}  -format %c  -depth 8  histogram:info:-`
+  #   histogram_lines = histogram.split("\n")
+  #           #        11: ( 98, 72, 83) #624853 srgb(98,72,83)
+  #   #puts "#{histogram_lines.count} distinct colors in #{photo_filename}"
+  #   rgbs = histogram_lines.map do |hist_item|
+  #     #3: (255,255,235) #FFFFEB srgb(255,255,235)
+  #     count = hist_item[0...hist_item.index(":")].strip.to_i
+  #     color_str = hist_item[hist_item.index(":") + 1..hist_item.index(") ")].strip
+  #     colors = eval(color_str.gsub("(", "[").gsub(")", "]"))
+  #     [colors, count]
+  #   end
+  #   results = rgbs.group_by {|color, count| ColorCounter.is_sunsety(color) }.map{|bool, list| [bool, list.inject(0){|memo, color_count| memo + color_count[1]}]}
+  #   return Hash[*results.flatten]
+  # end
+
+  def ColorCounter.color_to_8bit(color)
+    #e.g. #D6539DF089F4
+    r = (color[1...5].to_i(16) / 255)
+    g = (color[5...9].to_i(16) / 255)
+    b = (color[9...13].to_i(16) / 255)
+    [r, g, b]
+  end
+
+  def ColorCounter.count_colors(image_filename)
+    image = Image::read(image_filename).first.quantize(16, RGBColorspace)
+    image_size = image.columns * image.rows
+    hist =  image.color_histogram.to_a
+    hist.map!{|color, count| [ColorCounter.color_to_8bit(color.to_color), count.to_f /  image_size] }
+    puts hist.inspect
+    hist.group_by{|color, count| ColorCounter.is_sunsety(color) }
+    #puts image.color_histogram()
   end
 end

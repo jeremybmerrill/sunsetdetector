@@ -3,6 +3,11 @@ require 'fileutils'
 require 'open3'
 require 'restclient'
 
+# TODO: 
+# tweet pictures of sunsets; wait five minutes, if picture n is less sunsetty than picture n-1, tweet picture n-1
+# eventually, rate all of the tweeted sunsets, use that as training data.
+
+
 class SunsetDetector
   attr_accessor :how_often_to_take_a_picture, :sunsettiness_threshold, :interface
 
@@ -12,11 +17,11 @@ class SunsetDetector
 
     c = ColorCounter.new
     # Dir.glob("*.jpg").each do |pic_filename| 
-    #   blk.call(self.detect_sunset(pic_filename))
+    #   blk.call(self.detect_sunset(pic_filename), nil) #don't delete these.
     # end
     loop do
       pic_filename = self.take_a_picture(interface)
-      blk.call(self.detect_sunset(pic_filename))
+      blk.call(self.detect_sunset(pic_filename), pic_filename)
       sleep 60 * self.how_often_to_take_a_picture
     end
   end
@@ -42,8 +47,6 @@ class SunsetDetector
   end
 end
 
-
-
 def tweet(status, photo_filename)
   url = "https://api.twitter.com/1.1/statuses/update_with_media.json"
   info = {}
@@ -54,10 +57,14 @@ def tweet(status, photo_filename)
   RestClient.post(url, info, :multipart => true)
 end
 
-s = SunsetDetector.new do |bool| 
+s = SunsetDetector.new do |bool, filename=nil| 
   if bool
     puts "that was a sunset"
+    #delete day-old (or older) non-sunset pics.    
+    old_sunsets = Dir.glob("not_a_sunset*")
+    old_sunsets.filter{|filename| filename.gsub("not_a_sunset_", "").gsub(".jpg", "").to_i < (Time.now.to_i - 60*60*24)}.each{|f| FileUtils.rm(f) }
   else
     puts "nope, no sunset"
+    FileUtils.move(filename, "not_a_#{filename}") unless filename.nil?
   end
 end
