@@ -1,13 +1,22 @@
 GEM
   remote: http://rubygems.org/
   specs:
+    faraday (0.8.7)
+      multipart-post (~> 1.1)
     hoe (3.5.1)
       rake (>= 0.8, < 11.0)
+    multi_json (1.7.2)
+    multipart-post (1.2.0)
     rake (10.0.3)
     rake-compiler (0.8.3)
       rake
     rmagick (2.13.2)
     ruby-opencv (0.0.8)
+    simple_oauth (0.2.0)
+    twitter (4.6.2)
+      faraday (~> 0.8, < 0.10)
+      multi_json (~> 1.0)
+      simple_oauth (~> 0.2)
 
 PLATFORMS
   ruby
@@ -17,3 +26,4 @@ DEPENDENCIES
   rake-compiler
   rmagick
   ruby-opencv
+  twitter

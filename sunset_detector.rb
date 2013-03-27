@@ -1,7 +1,7 @@
 require './count_colors'
 require 'fileutils'
 require 'open3'
-require 'restclient'
+require 'twitter'
 
 # TODO: 
 # tweet pictures of sunsets; wait five minutes, if picture n is less sunsetty than picture n-1, tweet picture n-1
@@ -12,6 +12,14 @@ class SunsetDetector
   attr_accessor :how_often_to_take_a_picture, :sunsettiness_threshold, :interface
 
   def initialize(interface = "video0", &blk)
+    authdetails = open("authdetails.txt", 'r').read.split("\n")
+    Twitter.configure do |config|
+      config.consumer_key = authdetails[0]
+      config.consumer_secret = authdetails[1]
+      config.oauth_token = authdetails[2]
+      config.oauth_token_secret = authdetails[3]
+    end
+
     self.how_often_to_take_a_picture = 0.25 #minutes
     self.sunsettiness_threshold = 0.1
 
@@ -48,13 +56,10 @@ class SunsetDetector
 end
 
 def tweet(status, photo_filename)
-  url = "https://api.twitter.com/1.1/statuses/update_with_media.json"
   info = {}
-  info["status"] = status
   info["lat"] = 40.706996
   info["long"] = -74.013283
-  info["media[]"] = open(photo_filename, 'r').read
-  RestClient.post(url, info, :multipart => true)
+  Twitter.update_with_media(status, open(photo_filename, 'rb').read, info)
 end
 
 s = SunsetDetector.new do |bool, filename=nil| 
@@ -63,6 +68,7 @@ s = SunsetDetector.new do |bool, filename=nil|
     #delete day-old (or older) non-sunset pics.    
     old_sunsets = Dir.glob("not_a_sunset*")
     old_sunsets.filter{|filename| filename.gsub("not_a_sunset_", "").gsub(".jpg", "").to_i < (Time.now.to_i - 60*60*24)}.each{|f| FileUtils.rm(f) }
+    tweet("here's tonight's sunset: ", )
   else
     puts "nope, no sunset"
     FileUtils.move(filename, "not_a_#{filename}") unless filename.nil?
