@@ -67,7 +67,8 @@ class ColorCounter
     hist =  image.color_histogram.to_a
     hist.map!{|color, count| [ColorCounter.color_to_8bit(color.to_color), count.to_f /  image_size] }
     puts hist.inspect
-    hist.group_by{|color, count| ColorCounter.is_sunsety(color) }
+    sunsetty_colors = hist.group_by{|color, count| ColorCounter.is_sunsety(color) }.map{|bool, list| [bool, list.inject(0){|memo, color_count| memo + color_count[1]}]}
     #puts image.color_histogram()
+    return Hash[*sunsetty_colors.flatten]
   end
 end
