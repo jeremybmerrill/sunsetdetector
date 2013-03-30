@@ -45,7 +45,7 @@ class SunsetDetector
       self.previous_sunset = nil
       self.delete_old_non_sunsets
     end
-    if photo.is_a_sunset
+    if photo.is_a_sunset?
         puts "that was a sunset"
         self.previous_sunset = photo
     else
@@ -82,9 +82,9 @@ class Photograph
   end
 
   def <=>(another_photo)
-    if self.sunsettiness < another_sock.sunsettiness
+    if self.sunsettiness < another_photo.sunsettiness
       -1
-    elsif self.sunsettiness > another_sock.sunsettiness
+    elsif self.sunsettiness > another_photo.sunsettiness
       1
     else
       0
@@ -92,8 +92,9 @@ class Photograph
   end
 
   def is_a_sunset?(sunset_proportion_threshold=0.05)
-    return self.is_a_sunset unless self.is_a_sunset.nil? || sunset_proportion_threshold != self.sunset_proportion_threshold
+    return self.is_a_sunset if (!self.is_a_sunset.nil? && sunset_proportion_threshold == self.sunset_proportion_threshold)
     self.is_a_sunset = self.sunsettiness > sunset_proportion_threshold
+    puts "#{self.filename}: #{self.sunsettiness}"
     self.sunset_proportion_threshold = sunset_proportion_threshold
     return self.is_a_sunset
   end
@@ -107,7 +108,6 @@ class Photograph
 
   def find_sunsettiness
     c = ColorCounter.count_sunsetty_colors(self.filename) #optionally, color_distance_threshold can be set here for distance from sunset color points.
-    puts "#{self.filename}: #{(c[true].to_f / c[false].to_f)}"
     return c[true].to_f / c[false].to_f
   end
 
