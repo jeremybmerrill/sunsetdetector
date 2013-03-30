@@ -13,12 +13,11 @@ class ColorCounter
     Math.sqrt(x + y + z)
   end
 
-  def ColorCounter.is_sunsety(rgb)
-    #sunsety if within 200 units of (255, 55, 0) or (255, 0, 0)
-    threshold = 120
+  def ColorCounter.is_sunsety(rgb, color_distance_threshold=150)
+    #sunsety if within $color_distance_threshold units of (255, 55, 0) or (255, 0, 0)
     orangish_red = [255, 200, 0]
     reddish_red = [255, 0, 0]
-    return ColorCounter.distance(rgb, orangish_red) < threshold || ColorCounter.distance(rgb, reddish_red) < threshold
+    return ColorCounter.distance(rgb, orangish_red) < color_distance_threshold || ColorCounter.distance(rgb, reddish_red) < color_distance_threshold
   end
 
   def ColorCounter.highlight_sunsety_colors(image_filename)
@@ -61,13 +60,13 @@ class ColorCounter
     [r, g, b]
   end
 
-  def ColorCounter.count_colors(image_filename)
-    image = Image::read(image_filename).first.quantize(16, RGBColorspace)
+  def ColorCounter.count_sunsetty_colors(image_filename, color_distance_threshold=150)
+    image = Image::read(image_filename).first.quantize(32, RGBColorspace)
     image_size = image.columns * image.rows
     hist =  image.color_histogram.to_a
     hist.map!{|color, count| [ColorCounter.color_to_8bit(color.to_color), count.to_f /  image_size] }
     puts hist.inspect
-    sunsetty_colors = hist.group_by{|color, count| ColorCounter.is_sunsety(color) }.map{|bool, list| [bool, list.inject(0){|memo, color_count| memo + color_count[1]}]}
+    sunsetty_colors = hist.group_by{|color, count| ColorCounter.is_sunsety(color, color_distance_threshold) }.map{|bool, list| [bool, list.inject(0){|memo, color_count| memo + color_count[1]}]}
     #puts image.color_histogram()
     return Hash[*sunsetty_colors.flatten]
   end
