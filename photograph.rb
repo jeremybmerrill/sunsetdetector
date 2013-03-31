@@ -7,9 +7,10 @@ class Photograph  < Sequel::Model
   set_primary_key :id
 
   def Photograph.bootstrap(db)
+    one_to_many :vote
     # create an items table
 
-    #TODO: create separate objects for twitter votes.
+    #TODO: migrations
     db.create_table :photographs do
       primary_key :id
       DateTime :taken
@@ -33,6 +34,10 @@ class Photograph  < Sequel::Model
     end
   end
 
+  def ground_truth_sunset_proportion
+    self.votes.inject(0){|v, memo| memo += v.value ? 1 : 0} / self.votes.count
+  end
+
   def is_a_sunset?(sunset_proportion_threshold=0.05)
     puts "#{self.filename}: #{self.sunsettiness}"
     return self.sunsettiness > sunset_proportion_threshold
@@ -53,6 +58,19 @@ class Photograph  < Sequel::Model
   end
 end
 
-class Photograph  < Sequel::Model
+class Vote  < Sequel::Model
+  many_to_one :photograph
+
+  def Photograph.bootstrap(db)
+    db.create_table :votes do
+      primary_key :id
+      Integer :photograph_id
+      String :tweet_id
+      unique(:tweet_id)
+      Integer :value
+      String :voter #twitter user.
+      String :voter_id #twitter user's id (don't need a model for this, atm)
+    end
+  end
 
 end
