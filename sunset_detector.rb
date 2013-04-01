@@ -41,7 +41,7 @@ class SunsetDetector
   def detect_sunset(photo)
     #tweet only if this is a local maximum in sunsettiness.
     if self.previous_sunset && (!photo.is_a_sunset?  || self.previous_sunset > photo)
-      self.previous_sunset.tweet(previous_sunset.test ? "here's a test sunset not from today" : "here's tonight's sunset: ")
+      self.previous_sunset.tweet(previous_sunset.test ? "here's a test sunset" : "Here's tonight's sunset: ")
       self.previous_sunset = nil
       self.delete_old_non_sunsets
     end
@@ -114,5 +114,5 @@ class Photograph
 end
 
 
-s = SunsetDetector.new(0.25)
+s = SunsetDetector.new(5)
 s.perform
