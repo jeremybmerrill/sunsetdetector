@@ -35,7 +35,7 @@ class SunsetDetector
   end
 
   def delete_old_non_sunsets
-      old_sunsets = Dir.glob("not_a_sunset*")
+      old_sunsets = Dir.glob("photos/not_a_sunset*")
       old_sunsets.select{|filename| filename.gsub("not_a_sunset_", "").gsub(".jpg", "").to_i < (Time.now.to_i - 60*60*24)}.each{|f| FileUtils.rm(f) } unless old_sunsets.empty?
   end
 
@@ -51,7 +51,7 @@ class SunsetDetector
         self.previous_sunset = photo
     else
       puts "nope, no sunset"
-      photo.move("not_a_#{photo.filename}")
+      photo.move("photos/not_a_#{File.basename(photo.filename)}")
     end
   end
 
@@ -64,8 +64,8 @@ class SunsetDetector
     _o.close
     _e.close
     time = Time.now.to_i.to_s
-    FileUtils.move("00000001.jpg", "sunset_#{time}.jpg")
-    Photograph.new("sunset_#{time}.jpg")
+    FileUtils.move("00000001.jpg", "photos/sunset_#{time}.jpg")
+    Photograph.new("photos/sunset_#{time}.jpg")
   end
 end
 
@@ -121,5 +121,5 @@ class Photograph
 end
 
 
-s = SunsetDetector.new(5)
+s = SunsetDetector.new(0.25)
 s.perform
