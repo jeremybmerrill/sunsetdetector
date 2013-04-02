@@ -8,6 +8,7 @@ require 'twitter'
 # eventually, rate all of the tweeted sunsets, use that as training data.
 
 class SunsetDetector
+  include ColorCounter
   attr_accessor :how_often_to_take_a_picture, :interface, :previous_sunset
 
   def initialize(how_often_to_take_a_picture=5, interface = "video0")
@@ -34,7 +35,7 @@ class SunsetDetector
   end
 
   def delete_old_non_sunsets
-      old_sunsets = Dir.glob("not_a_sunset*")
+      old_sunsets = Dir.glob("photos/not_a_sunset*")
       old_sunsets.select{|filename| filename.gsub("not_a_sunset_", "").gsub(".jpg", "").to_i < (Time.now.to_i - 60*60*24)}.each{|f| FileUtils.rm(f) } unless old_sunsets.empty?
   end
 
@@ -50,7 +51,7 @@ class SunsetDetector
         self.previous_sunset = photo
     else
       puts "nope, no sunset"
-      FileUtils.move(photo.filename, "not_a_#{photo.filename}")
+      photo.move("photos/not_a_#{File.basename(photo.filename)}")
     end
   end
 
@@ -63,8 +64,8 @@ class SunsetDetector
     _o.close
     _e.close
     time = Time.now.to_i.to_s
-    FileUtils.move("00000001.jpg", "sunset_#{time}.jpg")
-    Photograph.new("sunset_#{time}.jpg")
+    FileUtils.move("00000001.jpg", "photos/sunset_#{time}.jpg")
+    Photograph.new("photos/sunset_#{time}.jpg")
   end
 end
 
@@ -79,6 +80,11 @@ class Photograph
     self.is_a_sunset = nil
     self.test = test
     self.sunsettiness = self.find_sunsettiness
+  end
+
+  def move(dest)
+      FileUtils.move(self.filename, dest)
+      self.filename = dest
   end
 
   def <=>(another_photo)
@@ -104,15 +110,16 @@ class Photograph
     info["lat"] = 40.706996
     info["long"] = -74.013283
     Twitter.update_with_media(status, open(self.filename, 'rb').read, info)
+    puts "Tweeted: #{status} #{self.filename}"
   end
 
   def find_sunsettiness
-    c = ColorCounter.count_sunsetty_colors(self.filename) #optionally, color_distance_threshold can be set here for distance from sunset color points.
+    c = ColorCounter::count_sunsetty_colors(self.filename) #optionally, color_distance_threshold can be set here for distance from sunset color points.
     return c[true].to_f / c[false].to_f
   end
 
 end
 
 
-s = SunsetDetector.new(5)
+s = SunsetDetector.new(0.25)
 s.perform
