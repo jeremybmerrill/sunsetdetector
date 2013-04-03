@@ -7,7 +7,8 @@ require 'twitter'
 # tweet pictures of sunsets; wait five minutes, if picture n is less sunsetty than picture n-1, tweet picture n-1
 # eventually, rate all of the tweeted sunsets, use that as training data.
 
-#TODO: debug mode that takes pictures often, tweets all of them.
+#TODO: debug mode that takes pictures often, tweets all of them to a debug twitter account.
+#fix memory leaks http://stackoverflow.com/questions/958681/how-to-deal-with-memory-leaks-in-rmagick-in-ruby
 
 class SunsetDetector
   include ColorCounter
