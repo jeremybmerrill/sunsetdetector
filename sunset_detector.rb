@@ -7,6 +7,8 @@ require 'twitter'
 # tweet pictures of sunsets; wait five minutes, if picture n is less sunsetty than picture n-1, tweet picture n-1
 # eventually, rate all of the tweeted sunsets, use that as training data.
 
+#TODO: debug mode that takes pictures often, tweets all of them.
+
 class SunsetDetector
   include ColorCounter
   attr_accessor :how_often_to_take_a_picture, :interface, :previous_sunset
