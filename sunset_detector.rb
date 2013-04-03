@@ -70,8 +70,8 @@ class SunsetDetector
 end
 
 class Photograph
-  """Look at this photograph
-  every time I do it makes me RT"""
+  #Look at this photograph
+  #every time I do it makes me RT
   include Comparable
   attr_accessor :filename, :is_a_sunset, :test, :sunsettiness, :sunset_proportion_threshold
 
