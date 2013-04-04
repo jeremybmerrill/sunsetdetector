@@ -15,7 +15,7 @@ require 'yaml'
 
 #creative: "mplayer -vo jpeg -frames 1 -tv driver=v4l2:width=640:height=480:device=/dev/#{interface} tv://"
 #logitech: uvccapture -S80 -B80 -C80 -G80 -x800 -y600
-CAPTURE_CMD = "uvccapture -S80 -B80 -C80 -G80 -x1280 -y960"
+CAPTURE_CMD = "uvccapture -S40 -B95 -C40 -G80 -x1280 -y960"
 CAPTURE_OUTPUT_FILENAME = "snap.jpg"
 
 class SunsetDetector
@@ -27,13 +27,13 @@ class SunsetDetector
     puts "I'm in debug mode!" if self.debug
     auth_details = YAML.load(open("authdetails.yml", 'r').read)
     acct_auth_details = auth_details[debug ? "debug" : "default"]
-    self.twitter_account = acct_auth_details[:handle]
+    self.twitter_account = acct_auth_details["handle"]
 
     Twitter.configure do |config|
-      config.consumer_key = acct_auth_details[:consumerKey]
-      config.consumer_secret = acct_auth_details[:consumerSecret]
-      config.oauth_token = acct_auth_details[:accessToken]
-      config.oauth_token_secret = acct_auth_details[:accessSecret]
+      config.consumer_key = acct_auth_details["consumerKey"]
+      config.consumer_secret = acct_auth_details["consumerSecret"]
+      config.oauth_token = acct_auth_details["accessToken"]
+      config.oauth_token_secret = acct_auth_details["accessSecret"]
     end
 
     self.how_often_to_take_a_picture = how_often_to_take_a_picture #minutes
