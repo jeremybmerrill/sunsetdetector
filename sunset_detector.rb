@@ -20,11 +20,14 @@ CAPTURE_OUTPUT_FILENAME = "snap.jpg"
 
 class SunsetDetector
   include ColorCounter
-  attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_sunset
+  attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_sunset, :debug
 
-  def initialize(how_often_to_take_a_picture=5, twitter_account = "propubsunset")
+  def initialize(how_often_to_take_a_picture=5, debug=false)
+
     auth_details = YAML.load(open("authdetails.yml", 'r').read)
-    acct_auth_details = auth_details[twitter_account]
+    acct_auth_details = auth_details[debug ? "debug" : "default"]
+    self.twitter_account = acct_auth_details[:handle]
+
     Twitter.configure do |config|
       config.consumer_key = acct_auth_details[:consumerKey]
       config.consumer_secret = acct_auth_details[:consumerSecret]
@@ -32,7 +35,6 @@ class SunsetDetector
       config.oauth_token_secret = acct_auth_details[:accessSecret]
     end
 
-    self.twitter_account = twitter_account
     self.how_often_to_take_a_picture = how_often_to_take_a_picture #minutes
     self.previous_sunset = nil
   end
@@ -53,18 +55,24 @@ class SunsetDetector
 
   def detect_sunset(photo)
     #tweet only if this is a local maximum in sunsettiness.
-    if self.previous_sunset && (!photo.is_a_sunset?  || self.previous_sunset > photo)
-      self.previous_sunset.tweet(previous_sunset.test ? "here's a test sunset" : "Here's tonight's sunset: ")
-      self.previous_sunset = nil
-      self.delete_old_non_sunsets
-    end
-    if photo.is_a_sunset?
-        puts "that was a sunset"
-        self.previous_sunset = photo
+    unless self.debug
+      if self.previous_sunset && (!photo.is_a_sunset?  || self.previous_sunset > photo)
+        self.previous_sunset.tweet(previous_sunset.test ? "here's a test sunset" : "Here's tonight's sunset: ")
+        self.previous_sunset = nil
+        self.delete_old_non_sunsets
+      end
+      if photo.is_a_sunset?
+          puts "that was a sunset"
+          self.previous_sunset = photo
+      else
+        puts "nope, no sunset"
+        photo.move("photos/not_a_#{File.basename(photo.filename)}")
+      end
     else
-      puts "nope, no sunset"
-      photo.move("photos/not_a_#{File.basename(photo.filename)}")
+      photo.tweet("debug. sunsettiness: #{photo.sunsettiness}, threshold: #{photo.sunset_proportion_threshold}")
+      photo.move("photos/not_a_#{File.basename(photo.filename)}") unless photo.is_a_sunset?
     end
+
   end
 
   def take_a_picture()
