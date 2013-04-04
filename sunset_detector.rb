@@ -24,7 +24,7 @@ class SunsetDetector
 
   def initialize(how_often_to_take_a_picture=5, twitter_account = "propubsunset")
     auth_details = YAML.load(open("authdetails.yml", 'r').read)
-    acct_auth_details[twitter_account]
+    acct_auth_details = auth_details[twitter_account]
     Twitter.configure do |config|
       config.consumer_key = acct_auth_details[:consumerKey]
       config.consumer_secret = acct_auth_details[:consumerSecret]
