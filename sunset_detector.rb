@@ -2,28 +2,37 @@ require './count_colors'
 require 'fileutils'
 require 'open3'
 require 'twitter'
+require 'yaml'
 
 # TODO: 
 # tweet pictures of sunsets; wait five minutes, if picture n is less sunsetty than picture n-1, tweet picture n-1
 # eventually, rate all of the tweeted sunsets, use that as training data.
 
+# new camera has 1280x960, is UVC
+
 #TODO: debug mode that takes pictures often, tweets all of them to a debug twitter account.
 #fix memory leaks http://stackoverflow.com/questions/958681/how-to-deal-with-memory-leaks-in-rmagick-in-ruby
 
+#creative: "mplayer -vo jpeg -frames 1 -tv driver=v4l2:width=640:height=480:device=/dev/#{interface} tv://"
+#logitech: uvccapture -S80 -B80 -C80 -G80 -x800 -y600
+CAPTURE_CMD = "uvccapture -S80 -B80 -C80 -G80 -x1280 -y960"
+CAPTURE_OUTPUT_FILENAME = "snap.jpg"
+
 class SunsetDetector
   include ColorCounter
-  attr_accessor :how_often_to_take_a_picture, :interface, :previous_sunset
+  attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_sunset
 
-  def initialize(how_often_to_take_a_picture=5, interface = "video0")
-    authdetails = open("authdetails.txt", 'r').read.split("\n")
+  def initialize(how_often_to_take_a_picture=5, twitter_account = "propubsunset")
+    auth_details = YAML.load(open("authdetails.yml", 'r').read)
+    acct_auth_details[twitter_account]
     Twitter.configure do |config|
-      config.consumer_key = authdetails[0]
-      config.consumer_secret = authdetails[1]
-      config.oauth_token = authdetails[2]
-      config.oauth_token_secret = authdetails[3]
+      config.consumer_key = acct_auth_details[:consumerKey]
+      config.consumer_secret = acct_auth_details[:consumerSecret]
+      config.oauth_token = acct_auth_details[:accessToken]
+      config.oauth_token_secret = acct_auth_details[:accessSecret]
     end
 
-    self.interface = interface
+    self.twitter_account = twitter_account
     self.how_often_to_take_a_picture = how_often_to_take_a_picture #minutes
     self.previous_sunset = nil
   end
@@ -31,7 +40,7 @@ class SunsetDetector
   def perform
     #self.detect_sunset(Photograph.new("propublicasunsetfromlena.jpg", true)) #test
     loop do
-      photo = self.take_a_picture(self.interface)
+      photo = self.take_a_picture()
       self.detect_sunset(photo)
       sleep 60 * self.how_often_to_take_a_picture
     end
@@ -58,16 +67,15 @@ class SunsetDetector
     end
   end
 
-  def take_a_picture(interface="video0")
-    cmd = "mplayer -vo jpeg -frames 1 -tv driver=v4l2:width=640:height=480:device=/dev/#{interface} tv://"
-    _i, _o, _e = Open3.popen3(cmd)
+  def take_a_picture()
+    _i, _o, _e = Open3.popen3(CAPTURE_CMD)
     _o.read
     _e.read
     _i.close
     _o.close
     _e.close
     time = Time.now.to_i.to_s
-    FileUtils.move("00000001.jpg", "photos/sunset_#{time}.jpg")
+    FileUtils.move(CAPTURE_OUTPUT_FILENAME, "photos/sunset_#{time}.jpg")
     Photograph.new("photos/sunset_#{time}.jpg")
   end
 end
@@ -124,5 +132,5 @@ class Photograph
 end
 
 
-s = SunsetDetector.new(0.25)
+s = SunsetDetector.new(0.25, "sunsetdebug123")
 s.perform
