@@ -23,7 +23,8 @@ class SunsetDetector
   attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_sunset, :debug
 
   def initialize(how_often_to_take_a_picture=5, debug=false)
-
+    self.debug = debug
+    puts "I'm in debug mode!" if self.debug
     auth_details = YAML.load(open("authdetails.yml", 'r').read)
     acct_auth_details = auth_details[debug ? "debug" : "default"]
     self.twitter_account = acct_auth_details[:handle]
@@ -140,5 +141,5 @@ class Photograph
 end
 
 
-s = SunsetDetector.new(0.25, "sunsetdebug123")
+s = SunsetDetector.new(0.25, true)
 s.perform
