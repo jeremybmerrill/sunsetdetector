@@ -13,6 +13,8 @@ require 'yaml'
 #TODO: debug mode that takes pictures often, tweets all of them to a debug twitter account.
 #fix memory leaks http://stackoverflow.com/questions/958681/how-to-deal-with-memory-leaks-in-rmagick-in-ruby
 
+#TODO: include processing time in sleep amount 
+
 #creative: "mplayer -vo jpeg -frames 1 -tv driver=v4l2:width=640:height=480:device=/dev/#{interface} tv://"
 #logitech: uvccapture -S80 -B80 -C80 -G80 -x800 -y600
 CAPTURE_CMD = "uvccapture -S40 -B95 -C40 -G80 -x1280 -y960"
@@ -22,11 +24,11 @@ class SunsetDetector
   include ColorCounter
   attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_sunset, :debug
 
-  def initialize(how_often_to_take_a_picture=5, debug=false)
+  def initialize(debug=false)
     self.debug = debug
     puts "I'm in debug mode!" if self.debug
     auth_details = YAML.load(open("authdetails.yml", 'r').read)
-    acct_auth_details = auth_details[debug ? "debug" : "default"]
+    acct_auth_details = auth_details[self.debug ? "debug" : "default"]
     self.twitter_account = acct_auth_details["handle"]
 
     Twitter.configure do |config|
@@ -36,7 +38,7 @@ class SunsetDetector
       config.oauth_token_secret = acct_auth_details["accessSecret"]
     end
 
-    self.how_often_to_take_a_picture = how_often_to_take_a_picture #minutes
+    self.how_often_to_take_a_picture = self.debug ? 0.25 : 5 #minutes
     self.previous_sunset = nil
   end
 
@@ -141,5 +143,5 @@ class Photograph
 end
 
 
-s = SunsetDetector.new(0.25, true)
+s = SunsetDetector.new(ENV['DEBUG'] || false)
 s.perform
