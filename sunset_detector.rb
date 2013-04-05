@@ -14,6 +14,10 @@ require 'yaml'
 
 #TODO: gif all of a day's photos, (compress) and tweet.
 
+#good settings: 
+  #gain: 20; brightness: 90, contrast: 30, saturation: 50, sunsettiness: 0.135144, threshold: pic.twitter.com/2xfniujNUN
+  #gain: 80; brightness: 0, contrast: 20, saturation: 30, sunsettiness: 0.027367, threshold: pic.twitter.com/of1P9LYfVN
+
 #creative: "mplayer -vo jpeg -frames 1 -tv driver=v4l2:width=640:height=480:device=/dev/#{interface} tv://"
 #logitech: uvccapture -S80 -B80 -C80 -G80 -x800 -y600 # has 1280x960, is UVC
 SATURATION = ENV['SATURATION'] || 20
@@ -89,7 +93,7 @@ class SunsetDetector
   end
 
   def take_a_picture(capture_cmd = CAPTURE_CMD)
-    _i, _o, _e = Open3.popen3(CAPTURE_CMD)
+    _i, _o, _e = Open3.popen3(capture_cmd)
     _o.read
     _e.read
     _i.close
