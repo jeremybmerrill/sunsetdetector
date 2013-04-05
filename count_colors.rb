@@ -61,8 +61,8 @@ module ColorCounter
   end
 
   def ColorCounter.count_sunsetty_colors(image_filename, color_distance_threshold=150)
-    original_image = Image::read(image_filename)
-    image = original_image.first.quantize(32, RGBColorspace)
+    original_image = Image::read(image_filename).first
+    image = original_image.quantize(32, RGBColorspace)
     original_image.destroy!
     image_size = image.columns * image.rows
     hist =  image.color_histogram.to_a
