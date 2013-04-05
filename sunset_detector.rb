@@ -41,14 +41,21 @@ class SunsetDetector
       config.oauth_token_secret = acct_auth_details["accessSecret"]
     end
 
-    self.how_often_to_take_a_picture = self.debug ? 0.25 : 5 #minutes
+    self.how_often_to_take_a_picture = self.debug ? 0 : 5 #minutes
     self.previous_sunset = nil
   end
 
   def perform
     #self.detect_sunset(Photograph.new("propublicasunsetfromlena.jpg", true)) #test
     loop do
-      photo = self.take_a_picture()
+      if self.debug
+        gain = ([0...10].sample * 10)
+        saturation = ([0...10].sample * 10)
+        contrast = ([0...10].sample * 10)
+        brightness = ([0...10].sample * 10)
+        capture_cmd = "uvccapture -S#{saturation} -B#{brightness} -C#{contrast} -G#{gain} -x1280 -y960"
+      end
+      photo = self.take_a_picture(capture_cmd)
       self.detect_sunset(photo)
       sleep 60 * self.how_often_to_take_a_picture
     end
@@ -81,7 +88,7 @@ class SunsetDetector
 
   end
 
-  def take_a_picture()
+  def take_a_picture(capture_cmd = CAPTURE_CMD)
     _i, _o, _e = Open3.popen3(CAPTURE_CMD)
     _o.read
     _e.read
