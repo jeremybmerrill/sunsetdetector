@@ -49,10 +49,10 @@ class SunsetDetector
     #self.detect_sunset(Photograph.new("propublicasunsetfromlena.jpg", true)) #test
     loop do
       if self.debug
-        self.gain = ([0...10].sample * 10)
-        self.saturation = ([0...10].sample * 10)
-        self.contrast = ([0...10].sample * 10)
-        self.brightness = ([0...10].sample * 10)
+        self.gain = ((0...10).to_a.sample * 10)
+        self.saturation = ((0...10).to_a.sample * 10)
+        self.contrast = ((0...10).to_a.sample * 10)
+        self.brightness = ((0...10).to_a.sample * 10)
         capture_cmd = "uvccapture -S#{self.saturation} -B#{self.brightness} -C#{self.contrast} -G#{self.gain} -x1280 -y960"
       end
       photo = self.take_a_picture(capture_cmd)
