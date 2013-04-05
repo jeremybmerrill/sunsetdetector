@@ -25,7 +25,7 @@ CAPTURE_OUTPUT_FILENAME = "snap.jpg"
 
 class SunsetDetector
   include ColorCounter
-  attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_sunset, :debug
+  attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_sunset, :debug, :gain, :contrast, :brightness, :saturation
 
   def initialize(debug=false)
     self.debug = debug
@@ -49,11 +49,11 @@ class SunsetDetector
     #self.detect_sunset(Photograph.new("propublicasunsetfromlena.jpg", true)) #test
     loop do
       if self.debug
-        gain = ([0...10].sample * 10)
-        saturation = ([0...10].sample * 10)
-        contrast = ([0...10].sample * 10)
-        brightness = ([0...10].sample * 10)
-        capture_cmd = "uvccapture -S#{saturation} -B#{brightness} -C#{contrast} -G#{gain} -x1280 -y960"
+        self.gain = ([0...10].sample * 10)
+        self.saturation = ([0...10].sample * 10)
+        self.contrast = ([0...10].sample * 10)
+        self.brightness = ([0...10].sample * 10)
+        capture_cmd = "uvccapture -S#{self.saturation} -B#{self.brightness} -C#{self.contrast} -G#{self.gain} -x1280 -y960"
       end
       photo = self.take_a_picture(capture_cmd)
       self.detect_sunset(photo)
@@ -82,7 +82,7 @@ class SunsetDetector
         photo.move("photos/not_a_#{File.basename(photo.filename)}")
       end
     else
-      photo.tweet("debug. sunsettiness: #{photo.sunsettiness}, threshold: #{photo.sunset_proportion_threshold}")
+      photo.tweet("gain: #{self.gain.to_s[0..7]}; brightness: #{self.brightness.to_s[0..7]}, contrast: #{self.contrast.to_s[0..7]}, saturation: #{self.saturation.to_s[0..7]}, sunsettiness: #{photo.sunsettiness.to_s[0..7]}, threshold: #{photo.sunset_proportion_threshold.to_s[0..7]}")
       photo.move("photos/not_a_#{File.basename(photo.filename)}") unless photo.is_a_sunset?
     end
 
