@@ -12,9 +12,11 @@ require 'yaml'
 
 #TODO: include processing time in sleep amount 
 
+#TODO: gif all of a day's photos, (compress) and tweet.
+
 #creative: "mplayer -vo jpeg -frames 1 -tv driver=v4l2:width=640:height=480:device=/dev/#{interface} tv://"
 #logitech: uvccapture -S80 -B80 -C80 -G80 -x800 -y600 # has 1280x960, is UVC
-CAPTURE_CMD = "uvccapture -S40 -B95 -C40 -G80 -x1280 -y960"
+CAPTURE_CMD = "uvccapture -S20 -B95 -C40 -G80 -x1280 -y960"
 CAPTURE_OUTPUT_FILENAME = "snap.jpg"
 
 class SunsetDetector
@@ -59,7 +61,7 @@ class SunsetDetector
       if self.previous_sunset && (!photo.is_a_sunset?  || self.previous_sunset > photo)
         self.previous_sunset.tweet(previous_sunset.test ? "here's a test sunset" : "Here's tonight's sunset: ")
         self.previous_sunset = nil
-        self.delete_old_non_sunsets
+        #self.delete_old_non_sunsets #heh, there's hella memory on this memory card.
       end
       if photo.is_a_sunset?
           puts "that was a sunset"
