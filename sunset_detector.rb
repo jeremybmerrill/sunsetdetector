@@ -8,15 +8,12 @@ require 'yaml'
 # tweet pictures of sunsets; wait five minutes, if picture n is less sunsetty than picture n-1, tweet picture n-1
 # eventually, rate all of the tweeted sunsets, use that as training data.
 
-# new camera has 1280x960, is UVC
-
-#TODO: debug mode that takes pictures often, tweets all of them to a debug twitter account.
-#fix memory leaks http://stackoverflow.com/questions/958681/how-to-deal-with-memory-leaks-in-rmagick-in-ruby
+#TODO: fix memory leaks http://stackoverflow.com/questions/958681/how-to-deal-with-memory-leaks-in-rmagick-in-ruby
 
 #TODO: include processing time in sleep amount 
 
 #creative: "mplayer -vo jpeg -frames 1 -tv driver=v4l2:width=640:height=480:device=/dev/#{interface} tv://"
-#logitech: uvccapture -S80 -B80 -C80 -G80 -x800 -y600
+#logitech: uvccapture -S80 -B80 -C80 -G80 -x800 -y600 # has 1280x960, is UVC
 CAPTURE_CMD = "uvccapture -S40 -B95 -C40 -G80 -x1280 -y960"
 CAPTURE_OUTPUT_FILENAME = "snap.jpg"
 
