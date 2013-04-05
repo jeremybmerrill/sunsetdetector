@@ -16,7 +16,11 @@ require 'yaml'
 
 #creative: "mplayer -vo jpeg -frames 1 -tv driver=v4l2:width=640:height=480:device=/dev/#{interface} tv://"
 #logitech: uvccapture -S80 -B80 -C80 -G80 -x800 -y600 # has 1280x960, is UVC
-CAPTURE_CMD = "uvccapture -S20 -B95 -C40 -G80 -x1280 -y960"
+SATURATION = ENV['SATURATION'] || 20
+BRIGHTNESS = ENV['BRIGHTNESS'] || 95
+CONTRAST = ENV['CONTRAST'] || 40
+GAIN = ENV['GAIN'] || 50
+CAPTURE_CMD = "uvccapture -S#{SATURATION} -B#{BRIGHTNESS} -C#{CONTRAST} -G#{GAIN} -x1280 -y960" || ENV["CAPTURE_CMD"]
 CAPTURE_OUTPUT_FILENAME = "snap.jpg"
 
 class SunsetDetector
