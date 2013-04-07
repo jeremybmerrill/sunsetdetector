@@ -3,7 +3,7 @@
 require 'RMagick'
 include Magick
 
-class ColorCounter
+module ColorCounter
   def initialize; end
 
   def ColorCounter.distance(a, b)
@@ -61,13 +61,16 @@ class ColorCounter
   end
 
   def ColorCounter.count_sunsetty_colors(image_filename, color_distance_threshold=150)
-    image = Image::read(image_filename).first.quantize(32, RGBColorspace)
+    original_image = Image::read(image_filename).first
+    image = original_image.quantize(32, RGBColorspace)
+    original_image.destroy!
     image_size = image.columns * image.rows
     hist =  image.color_histogram.to_a
     hist.map!{|color, count| [ColorCounter.color_to_8bit(color.to_color), count.to_f /  image_size] }
-    puts hist.inspect
+    #puts hist.inspect
     sunsetty_colors = hist.group_by{|color, count| ColorCounter.is_sunsety(color, color_distance_threshold) }.map{|bool, list| [bool, list.inject(0){|memo, color_count| memo + color_count[1]}]}
     #puts image.color_histogram()
+    image.destroy!
     return Hash[*sunsetty_colors.flatten]
   end
 end
