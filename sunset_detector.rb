@@ -134,8 +134,20 @@ class SunsetDetector
     p
   end
 
-  def search_twitter
-    #get all tweets that mention @propubsunset
+  def search_twitter   
+    Twitter.mentions_timeline.each do |tweet|
+      yes = tweet.text.match(/YES/i)
+      no = tweet.text.match(/NO/i)
+      if yes && no
+        if yes.begin(0) < no.begin(0)
+          no = nil
+        else
+          yes = nil
+        end
+      end
+      #...
+
+    end
   end
 end
 
