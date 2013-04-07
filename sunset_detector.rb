@@ -97,6 +97,10 @@ class SunsetDetector
     p.save
     p
   end
+
+  def search_twitter
+    #get all tweets that mention @propubsunset
+  end
 end
 
 s = SunsetDetector.new(0.25)

@@ -1,28 +1,11 @@
 require 'sequel'
 
-class Photograph  < Sequel::Model
-  """Look at this photograph
-  every time I do it makes me RT"""
+class Photograph < Sequel::Model
+  #Look at this photograph
+  #every time I do it makes me RT
   include Comparable
   set_primary_key :id
-
-  def Photograph.bootstrap(db)
-    one_to_many :vote
-    # create an items table
-
-    #TODO: migrations
-    db.create_table :photographs do
-      primary_key :id
-      DateTime :taken
-      unique(:taken)
-      Float :sunsettiness
-      String :tweet_id
-      unique(:tweet_id)
-      Boolean :ground_truth_manual_sunsettiness
-      String :filename
-      unique(:filename)
-    end
-  end
+  one_to_many :vote
 
   def <=>(another_photo)
     if self.sunsettiness < another_photo.sunsettiness
@@ -60,17 +43,5 @@ end
 
 class Vote  < Sequel::Model
   many_to_one :photograph
-
-  def Photograph.bootstrap(db)
-    db.create_table :votes do
-      primary_key :id
-      Integer :photograph_id
-      String :tweet_id
-      unique(:tweet_id)
-      Integer :value
-      String :voter #twitter user.
-      String :voter_id #twitter user's id (don't need a model for this, atm)
-    end
-  end
 
 end
