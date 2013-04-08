@@ -54,8 +54,8 @@ class SunsetDetector
     loop do
       if self.debug
         self.gain = 0 #((0...10).to_a.sample * 10)
-        self.saturation = ((0...5).to_a.sample * 10)
-        self.contrast = ((0...5).to_a.sample * 10)
+        self.saturation = ((3...6).to_a.sample * 10)
+        self.contrast = ((3...6).to_a.sample * 10)
         self.brightness = ((10...20).to_a.sample * 10)
         capture_cmd = "uvccapture -S#{self.saturation} -B#{self.brightness} -C#{self.contrast} -G#{self.gain} -x1280 -y960"
       end
