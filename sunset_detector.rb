@@ -56,7 +56,7 @@ class SunsetDetector
         self.gain = 0 #((0...10).to_a.sample * 10)
         self.saturation = ((3...6).to_a.sample * 10)
         self.contrast = ((3...6).to_a.sample * 10)
-        self.brightness = ((10...20).to_a.sample * 10)
+        self.brightness = ((0...10).to_a.sample * 30) + 100
         capture_cmd = "uvccapture -t10 -S#{self.saturation} -B#{self.brightness} -C#{self.contrast} -G#{self.gain} -x1280 -y960"
       end
       photo = self.take_a_picture(capture_cmd)
