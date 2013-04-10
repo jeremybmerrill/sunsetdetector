@@ -20,10 +20,10 @@ require 'yaml'
 
 #creative: "mplayer -vo jpeg -frames 1 -tv driver=v4l2:width=640:height=480:device=/dev/#{interface} tv://"
 #logitech: uvccapture -S80 -B80 -C80 -G80 -x800 -y600 # has 1280x960, is UVC
-SATURATION = ENV['SATURATION'] || 20
-BRIGHTNESS = ENV['BRIGHTNESS'] || 95
-CONTRAST = ENV['CONTRAST'] || 40
-GAIN = ENV['GAIN'] || 50
+SATURATION = ENV['SATURATION'] || 50
+BRIGHTNESS = ENV['BRIGHTNESS'] || 170
+CONTRAST = ENV['CONTRAST'] || 50
+GAIN = ENV['GAIN'] || 0
 CAPTURE_CMD = "uvccapture -S#{SATURATION} -B#{BRIGHTNESS} -C#{CONTRAST} -G#{GAIN} -x1280 -y960" || ENV["CAPTURE_CMD"]
 CAPTURE_OUTPUT_FILENAME = "snap.jpg"
 
@@ -52,13 +52,13 @@ class SunsetDetector
   def perform
     #self.detect_sunset(Photograph.new("propublicasunsetfromlena.jpg", true)) #test
     loop do
-      if self.debug
-        self.gain = 0 #((0...10).to_a.sample * 10)
-        self.saturation = 50 #((3...6).to_a.sample * 10)
-        self.contrast = 50 #((3...6).to_a.sample * 10)
-        self.brightness = ((5...10).to_a.sample * 10) + 100
-        capture_cmd = "uvccapture -S#{self.saturation} -B#{self.brightness} -C#{self.contrast} -G#{self.gain} -x1280 -y960"
-      end
+      # if self.debug
+      #   self.gain = 0 #((0...10).to_a.sample * 10)
+      #   self.saturation = 50 #((3...6).to_a.sample * 10)
+      #   self.contrast = 50 #((3...6).to_a.sample * 10)
+      #   self.brightness = ((5...10).to_a.sample * 10) + 100
+      #   capture_cmd = "uvccapture -S#{self.saturation} -B#{self.brightness} -C#{self.contrast} -G#{self.gain} -x1280 -y960"
+      # end
       photo = self.take_a_picture(capture_cmd)
       self.detect_sunset(photo)
       sleep 60 * self.how_often_to_take_a_picture
