@@ -59,7 +59,7 @@ class SunsetDetector
       #   self.brightness = ((5...10).to_a.sample * 10) + 100
       #   capture_cmd = "uvccapture -S#{self.saturation} -B#{self.brightness} -C#{self.contrast} -G#{self.gain} -x1280 -y960"
       # end
-      photo = self.take_a_picture(capture_cmd)
+      photo = self.take_a_picture(CAPTURE_CMD)
       self.detect_sunset(photo)
       sleep 60 * self.how_often_to_take_a_picture
     end
