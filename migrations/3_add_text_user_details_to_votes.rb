@@ -1,6 +1,6 @@
 Sequel.migration do
   up do
-    #add_column :votes, :text, :text
+    add_column :votes, :text, :text
     add_column :votes, :username, String
     add_column :votes, :user_id, String
   end

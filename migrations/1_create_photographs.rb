@@ -6,8 +6,7 @@ Sequel.migration do
       unique(:taken)
       Float :sunsettiness
       String :tweet_id
-      unique(:tweet_id)
-      Boolean :ground_truth_manual_sunsettiness
+      #Boolean :ground_truth_manual_sunsettiness
       String :filename
       unique(:filename)
     end

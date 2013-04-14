@@ -1,12 +1,13 @@
 class Vote  < Sequel::Model
   many_to_one :photograph
 
-  def new(text)
-    #set the value of this vote.
-    self.text = text
+  #attr_accessor :text, :user, :user_id, :tweet_id, :photograph_id, :value
 
-    yes = text.match(/YES/i)
-    no = text.match(/NO/i)
+  def set_value
+    #set the value of this vote.
+
+    yes = self.text.match(/YES/i)
+    no = self.text.match(/NO/i)
     if yes && no
       if yes.begin(0) < no.begin(0)
         no = nil
