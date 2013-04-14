@@ -40,8 +40,3 @@ class Photograph < Sequel::Model
     return c[true].to_f / c[false].to_f
   end
 end
-
-class Vote  < Sequel::Model
-  many_to_one :photograph
-
-end

@@ -136,17 +136,14 @@ class SunsetDetector
 
   def search_twitter   
     Twitter.mentions_timeline.each do |tweet|
-      yes = tweet.text.match(/YES/i)
-      no = tweet.text.match(/NO/i)
-      if yes && no
-        if yes.begin(0) < no.begin(0)
-          no = nil
-        else
-          yes = nil
-        end
-      end
-      #...
-
+      tweet.in_reply_to_status_id
+      v = Vote.new(tweet.text)
+      v.user = tweet.from_user_name
+      v.user_id = tweet.from_user_id
+      v.tweet_id = tweet.id
+      v.photograph_id = Photograph.find_by_tweet_id(tweet.in_reply_to_status_id)
+      v.save
+      puts "\"#{tweet}\" is a #{v.value} vote for #{v.photograph_id}"
     end
   end
 end
