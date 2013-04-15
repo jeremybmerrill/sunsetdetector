@@ -63,7 +63,7 @@ class SunsetDetector
       # end
       before_pic_time = Time.now
       photo = self.take_a_picture(CAPTURE_CMD)
-      self.detect_sunset(photo)
+      self.detect_sunset(photo) unless photo.nil?
       processing_duration = Time.now - before_pic_time
       time_to_sleep = [(60 * self.how_often_to_take_a_picture) - processing_duration, 0].max
       sleep time_to_sleep
@@ -105,8 +105,13 @@ class SunsetDetector
     _o.close
     _e.close
     time = Time.now.to_i.to_s
-    FileUtils.move(CAPTURE_OUTPUT_FILENAME, "photos/sunset_#{time}.jpg")
-    Photograph.new("photos/sunset_#{time}.jpg")
+    if(File.exists?(CAPTURE_OUTPUT_FILENAME))
+      FileUtils.move(CAPTURE_OUTPUT_FILENAME, "photos/sunset_#{time}.jpg")
+      Photograph.new("photos/sunset_#{time}.jpg")
+    else
+      puts "Whoops, couldn't find the photo. Skipping."
+      nil
+    end
   end
 end
 
