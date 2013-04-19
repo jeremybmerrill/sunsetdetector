@@ -91,8 +91,12 @@ class SunsetDetector
         photo.move("photos/not_a_#{File.basename(photo.filename)}")
       end
     else
-      photo.tweet("gain: #{self.gain.to_s[0..7]}; brightness: #{self.brightness.to_s[0..7]}, contrast: #{self.contrast.to_s[0..7]}, saturation: #{self.saturation.to_s[0..7]}, sunsettiness: #{photo.sunsettiness.to_s[0..7]}, threshold: #{photo.sunset_proportion_threshold.to_s[0..7]}")
-      photo.move("photos/not_a_#{File.basename(photo.filename)}") unless photo.is_a_sunset?
+      if photo.is_a_sunset?
+        photo.tweet("sunsettiness: #{photo.sunsettiness.to_s[0..7]}, threshold: #{photo.sunset_proportion_threshold.to_s[0..7]}")
+        highlighted_photo = ColorCounter.highlight_sunsety_colors(photo.filename)
+        Twitter.update_with_media("highlighted, sunsettiness: #{photo.sunsettiness.to_s[0..7]}", highlighted_photo)
+        photo.move("photos/not_a_#{File.basename(photo.filename)}") unless photo.is_a_sunset?
+      end
     end
 
   end

@@ -20,7 +20,7 @@ module ColorCounter
     return ColorCounter.distance(rgb, orangish_red) < color_distance_threshold || ColorCounter.distance(rgb, reddish_red) < color_distance_threshold
   end
 
-  def ColorCounter.highlight_sunsety_colors(image_filename)
+  def ColorCounter.highlight_sunsety_colors(image_filename) #returns new filename
     magick_image = Image::read(image_filename).first
     new_image = magick_image.dup
     magick_image.each_pixel do |pxl, c, r|
@@ -32,7 +32,10 @@ module ColorCounter
       end
       new_image = new_image.store_pixels(c, r, 1, 1, [new_pxl])
     end
-    new_image.display
+    #new_image.display
+    new_filename = File.join(File.dirname(image_filename), "highlight_" + File.basename(image_filename))
+    new_image.write( new_filename  )
+    new_filename
   end
 
   # def ColorCounter.count_colors(photo_filename)
