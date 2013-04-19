@@ -47,7 +47,7 @@ class SunsetDetector
       config.oauth_token_secret = acct_auth_details["accessSecret"]
     end
 
-    self.how_often_to_take_a_picture = self.debug ? 0 : 5 #minutes
+    self.how_often_to_take_a_picture = self.debug ? 3 : 5 #minutes
     self.previous_sunset = nil
   end
 
