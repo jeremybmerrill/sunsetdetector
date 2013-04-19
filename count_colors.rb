@@ -13,11 +13,14 @@ module ColorCounter
     Math.sqrt(x + y + z)
   end
 
-  def ColorCounter.is_sunsety(rgb, color_distance_threshold=150)
+  def ColorCounter.is_sunsety(rgb, color_distance_threshold=100)
     #sunsety if within $color_distance_threshold units of (255, 55, 0) or (255, 0, 0)
     orangish_red = [255, 200, 0]
     reddish_red = [255, 0, 0]
-    return ColorCounter.distance(rgb, orangish_red) < color_distance_threshold || ColorCounter.distance(rgb, reddish_red) < color_distance_threshold
+    orangereddish_red = [255, 100, 0]
+    return ColorCounter.distance(rgb, orangish_red) < color_distance_threshold || 
+          ColorCounter.distance(rgb, reddish_red) < color_distance_threshold ||
+          ColorCounter.distance(rgb, orangereddish_red) < color_distance_threshold
   end
 
   def ColorCounter.highlight_sunsety_colors(image_filename) #returns new filename
