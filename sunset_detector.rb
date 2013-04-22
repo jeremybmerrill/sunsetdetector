@@ -94,7 +94,7 @@ class SunsetDetector
       if photo.is_a_sunset?
         photo.tweet("sunsettiness: #{photo.sunsettiness.to_s[0..7]}, threshold: #{photo.sunset_proportion_threshold.to_s[0..7]}")
         highlighted_photo = ColorCounter.highlight_sunsety_colors(photo.filename)
-        Twitter.update_with_media("highlighted, sunsettiness: #{photo.sunsettiness.to_s[0..7]}", highlighted_photo)
+        Twitter.update_with_media("highlighted, sunsettiness: #{photo.sunsettiness.to_s[0..7]}", open(highlighted_photo).read )
         photo.move("photos/not_a_#{File.basename(photo.filename)}") unless photo.is_a_sunset?
       end
     end
