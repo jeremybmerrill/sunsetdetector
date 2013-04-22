@@ -4,6 +4,8 @@ require 'RMagick'
 include Magick
 
 module ColorCounter
+  DEFAULT_COLOR_DISTANCE_THRESHOLD = 100
+
   def initialize; end
 
   def ColorCounter.distance(a, b)
@@ -13,7 +15,7 @@ module ColorCounter
     Math.sqrt(x + y + z)
   end
 
-  def ColorCounter.is_sunsety(rgb, color_distance_threshold=100)
+  def ColorCounter.is_sunsety(rgb, color_distance_threshold=DEFAULT_COLOR_DISTANCE_THRESHOLD)
     #sunsety if within $color_distance_threshold units of (255, 55, 0) or (255, 0, 0)
     orangish_red = [255, 200, 0]
     reddish_red = [255, 0, 0]
@@ -66,10 +68,10 @@ module ColorCounter
     [r, g, b]
   end
 
-  def ColorCounter.count_sunsetty_colors(image_filename, color_distance_threshold=150)
+  def ColorCounter.count_sunsetty_colors(image_filename, color_distance_threshold=DEFAULT_COLOR_DISTANCE_THRESHOLD)
     original_image = Image::read(image_filename).first
     image = original_image.quantize(32, RGBColorspace)
-    original_image.destroy!
+    original_image.destroy! #heh memleaks.
     image_size = image.columns * image.rows
     hist =  image.color_histogram.to_a
     hist.map!{|color, count| [ColorCounter.color_to_8bit(color.to_color), count.to_f /  image_size] }
