@@ -1,4 +1,5 @@
 require './count_colors'
+require './photograph'
 require 'fileutils'
 require 'open3'
 require 'twitter'
