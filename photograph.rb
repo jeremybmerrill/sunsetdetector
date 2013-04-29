@@ -28,7 +28,7 @@ class Photograph
     end
   end
 
-  def is_a_sunset?(sunset_proportion_threshold=0.04)
+  def is_a_sunset?(sunset_proportion_threshold=0.025)
     return self.is_a_sunset if (!self.is_a_sunset.nil? && sunset_proportion_threshold == self.sunset_proportion_threshold)
     self.is_a_sunset = self.sunsettiness > sunset_proportion_threshold
     puts "#{self.filename}: #{self.sunsettiness}"
