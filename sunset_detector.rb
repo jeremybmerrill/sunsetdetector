@@ -32,7 +32,7 @@ CAPTURE_CMD = "fswebcam --set contrast=20% -r 1280x720 -D 1 -S 3 --no-banner --s
 
 class SunsetDetector
   include ColorCounter
-  attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_sunset, :debug, :gain, :contrast, :brightness, :saturation
+  attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_sunset, :debug, :gain, :contrast, :brightness, :saturation, :gif_temp_dir
 
   def initialize(debug=false)
     self.debug = debug
@@ -40,6 +40,8 @@ class SunsetDetector
     auth_details = YAML.load(open("authdetails.yml", 'r').read)
     acct_auth_details = auth_details[self.debug ? "debug" : "default"]
     self.twitter_account = acct_auth_details["handle"]
+
+    self.gif_temp_dir = "gif_temp"
 
     Twitter.configure do |config|
       config.consumer_key = acct_auth_details["consumerKey"]
@@ -74,6 +76,40 @@ class SunsetDetector
   def delete_old_non_sunsets
       old_sunsets = Dir.glob("photos/not_a_sunset*")
       old_sunsets.select{|filename| filename.gsub("not_a_sunset_", "").gsub(".jpg", "").to_i < (Time.now.to_i - 60*60*24)}.each{|f| FileUtils.rm(f) } unless old_sunsets.empty?
+  end
+
+  def gifify_today
+
+  end
+  def gifify_todays_sunset
+    #find the latest sunset
+    #gif everything in the previous hour
+    if self.previous_sunset
+      most_recent_sunset_time = self.previous_sunset.gsub("photos/sunset_", "").gsub(".jpg").to_i
+    else
+      most_recent_sunset_time = Dir["photos/sunset_*"].sort.last.gsub("photos/sunset_", "").gsub(".jpg").to_i
+    end
+    puts most_recent_sunset_time
+    #gifify(most_recent_sunset_time , 1, 1)
+  end
+
+  def gifify(start_time, hours_back, skip_interval)
+   #TODO: allow diff days to be selected?
+    #find all photos in the last 24 hours
+    require 'fileutils'
+    FileUtils.rm_r(self.gif_temp_dir) if exists?(self.gif_temp_dir)
+    todays_photos = Dir["photos/*"].select do |photo_filename|
+      photo_time = photo_filename.gsub("photos/not_a_sunset_", "").gsub(".jpg", "").gsub("photos/sunset_","").to_i
+      photo_time > (start_time - hours_back * 60 * 60) #TODO: 24 hours
+    end
+    todays_photos_smaller = []
+    todays_photos.each_with_index{|p, i| todays_photos_smaller << p if i % skip_interval == 0}
+    FileUtils.mkdir(self.gif_temp_dir)
+    todays_photos_smaller.each{|filename| FileUtils.cp(filename, filename.gsub("photos", self.gif_temp_dir))}
+    puts "gifin', be done in a giffy!"
+    `convert -delay 100 -resize 300x300 -loop 0 #{self.gif_temp_dir}/* todayssunset.gif`
+    puts "done"
+    FileUtils.rm_r(self.gif_temp_dir)
   end
 
   def detect_sunset(photo)
@@ -119,6 +155,7 @@ class SunsetDetector
     end
   end
 end
-
-s = SunsetDetector.new(ENV['DEBUG'] || false)
-s.perform
+if __FILE__ == $0
+  s = SunsetDetector.new(ENV['DEBUG'] || false)
+  s.perform
+end
