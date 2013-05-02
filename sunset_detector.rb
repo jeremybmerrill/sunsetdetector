@@ -96,7 +96,7 @@ class SunsetDetector
    #TODO: allow diff days to be selected?
     #find all photos in the last 24 hours
     require 'fileutils'
-    FileUtils.rm_r(self.gif_temp_dir) if exists?(self.gif_temp_dir)
+    FileUtils.rm_r(self.gif_temp_dir) if File.exists?(self.gif_temp_dir)
     todays_photos = Dir["photos/*"].select do |photo_filename|
       photo_time = photo_filename.gsub("photos/not_a_sunset_", "").gsub(".jpg", "").gsub("photos/sunset_","").to_i
       photo_time > (start_time - hours_back * 60 * 60) #TODO: 24 hours
@@ -105,7 +105,7 @@ class SunsetDetector
     todays_photos.each_with_index{|p, i| todays_photos_smaller << p if i % skip_interval == 0}
     FileUtils.mkdir(self.gif_temp_dir)
     todays_photos_smaller.each{|filename| FileUtils.cp(filename, filename.gsub("photos", self.gif_temp_dir))}
-    puts "gifin', be done in a giffy!"
+    puts "gifin' #{todays_photos_smaller.size} photos, be done in a giffy!"
     `convert -delay 100 -resize 300x300 -loop 0 #{self.gif_temp_dir}/* todayssunset.gif`
     puts "done"
     FileUtils.rm_r(self.gif_temp_dir)
