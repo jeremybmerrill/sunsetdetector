@@ -85,11 +85,12 @@ class SunsetDetector
     #find the latest sunset
     #gif everything in the previous hour
     if self.previous_sunset
-      most_recent_sunset_time = self.previous_sunset.gsub("photos/sunset_", "").gsub(".jpg", "").to_i
+      most_recent_sunset_time = self.previous_sunset.gsub("photos/sunset_", "").gsub(".jpg", "")
     else
-      most_recent_sunset_time = Dir["photos/sunset_*"].sort.last.gsub("photos/sunset_", "").gsub(".jpg", "").to_i
+      most_recent_sunset_time = Dir["photos/sunset_*"].sort.last.gsub("photos/sunset_", "").gsub(".jpg", "")
     end
-    gifify(most_recent_sunset_time + 20 * 60, 1.5, 1) #start 20 minutes after sunset.
+    puts "most recent sunset: #{most_recent_sunset_time}"
+    gifify(most_recent_sunset_time.to_i + 20 * 60, 1.5, 1) #start 20 minutes after sunset.
   end
 
   def gifify(start_time, hours_back, skip_interval)
