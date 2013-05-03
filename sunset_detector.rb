@@ -100,7 +100,7 @@ class SunsetDetector
     FileUtils.rm_r(self.gif_temp_dir) if File.exists?(self.gif_temp_dir)
     todays_photos = Dir["photos/*"].select do |photo_filename|
       photo_time = photo_filename.gsub("photos/not_a_sunset_", "").gsub(".jpg", "").gsub("photos/sunset_","").to_i
-      photo_time > ( start_time - hours_back * 60 * 60)
+      photo_time > ( start_time - hours_back * 60 * 60) && photo_time < start_time
     end
     todays_photos_smaller = []
     todays_photos.each_with_index{|p, i| todays_photos_smaller << p if i % skip_interval == 0}
