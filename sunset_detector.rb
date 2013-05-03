@@ -90,7 +90,7 @@ class SunsetDetector
       most_recent_sunset_time = Dir["photos/sunset_*"].sort.last.gsub("photos/sunset_", "").gsub(".jpg", "")
     end
     puts "most recent sunset: #{most_recent_sunset_time}"
-    gifify(most_recent_sunset_time.to_i + 20 * 60, 1.5, 1) #start 20 minutes after sunset.
+    gifify(most_recent_sunset_time.to_i + (20 * 60), 1.5, 1) #start 20 minutes after sunset.
   end
 
   def gifify(start_time, hours_back, skip_interval)
@@ -105,7 +105,7 @@ class SunsetDetector
     todays_photos_smaller = []
     todays_photos.each_with_index{|p, i| todays_photos_smaller << p if i % skip_interval == 0}
     FileUtils.mkdir(self.gif_temp_dir)
-    todays_photos_smaller.each{|filename| FileUtils.cp(filename, filename.gsub("photos", self.gif_temp_dir))}
+    todays_photos_smaller.each{|filename| FileUtils.cp(filename, filename.gsub("photos", self.gif_temp_dir).gsub("not_a_", ""))}
     puts "gifin' #{todays_photos_smaller.size} photos, be done in a giffy!"
     `convert -delay 100 -resize 300x300 -loop 0 #{self.gif_temp_dir}/* todayssunset.gif`
     puts "done"
