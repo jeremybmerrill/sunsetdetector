@@ -40,7 +40,12 @@ class Photograph
     info = {}
     info["lat"] = 40.706996
     info["long"] = -74.013283
-    Twitter.update_with_media(status, open(self.filename, 'rb').read, info)
+    begin
+      Twitter.update_with_media(status, open(self.filename, 'rb').read, info)
+    rescue Timeout::Error => te
+      puts "TWITER: Heckit! sendin youm messiges failt."
+      retry
+    end
     puts "Tweeted: #{status} #{self.filename}"
   end
 
