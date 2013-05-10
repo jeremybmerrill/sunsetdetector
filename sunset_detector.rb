@@ -27,7 +27,7 @@ CONTRAST = ENV['CONTRAST'] || 50
 GAIN = ENV['GAIN'] || 0
 #CAPTURE_CMD = "uvccapture -S#{SATURATION} -B#{BRIGHTNESS} -C#{CONTRAST} -G#{GAIN} -x1280 -y960" || ENV["CAPTURE_CMD"]
 CAPTURE_OUTPUT_FILENAME = "snap.jpg"
-CAPTURE_CMD = "fswebcam --set contrast=20% -r 1280x720 -D 1 -S 3 --no-banner --save #{CAPTURE_OUTPUT_FILENAME}" || ENV["CAPTURE_CMD"]
+CAPTURE_CMD = "fswebcam --set contrast=20% --set brightness=20% -r 1280x720 -D 1 -S 3 --no-banner --save #{CAPTURE_OUTPUT_FILENAME}" || ENV["CAPTURE_CMD"]
 
 
 class SunsetDetector
