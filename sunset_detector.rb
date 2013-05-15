@@ -34,6 +34,8 @@ class SunsetDetector
   include ColorCounter
   attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_sunset, :debug, :gain, :contrast, :brightness, :saturation, :gif_temp_dir
 
+  SUNSET_THRESHOLD = 0.04
+
   def initialize(debug=false)
     self.debug = debug
     puts "I'm in debug mode!" if self.debug
@@ -115,12 +117,12 @@ class SunsetDetector
   def detect_sunset(photo)
     #tweet only if this is a local maximum in sunsettiness.
     #unless self.debug
-      if self.previous_sunset && (!photo.is_a_sunset?  || self.previous_sunset > photo)
+      if self.previous_sunset && (!photo.is_a_sunset?(SUNSET_THRESHOLD)  || self.previous_sunset > photo)
         self.previous_sunset.tweet(previous_sunset.test ? "here's a test sunset" : "Here's tonight's sunset: ")
         self.previous_sunset = nil
         #self.delete_old_non_sunsets #heh, there's hella memory on this memory card.
       end
-      if photo.is_a_sunset?
+      if photo.is_a_sunset?(SUNSET_THRESHOLD)
           puts "that was a sunset"
           self.previous_sunset = photo
       else
@@ -128,11 +130,11 @@ class SunsetDetector
         photo.move("photos/not_a_#{File.basename(photo.filename)}")
       end
     # else
-    #   if photo.is_a_sunset?
+    #   if photo.is_a_sunset?(SUNSET_THRESHOLD)
     #     photo.tweet("sunsettiness: #{photo.sunsettiness.to_s[0..7]}, threshold: #{photo.sunset_proportion_threshold.to_s[0..7]}")
     #     highlighted_photo = ColorCounter.highlight_sunsety_colors(photo.filename)
     #     Twitter.update_with_media("highlighted, sunsettiness: #{photo.sunsettiness.to_s[0..7]}", open(highlighted_photo).read )
-    #     photo.move("photos/not_a_#{File.basename(photo.filename)}") unless photo.is_a_sunset?
+    #     photo.move("photos/not_a_#{File.basename(photo.filename)}") unless photo.is_a_sunset?(SUNSET_THRESHOLD)
     #   end
     # end
 
