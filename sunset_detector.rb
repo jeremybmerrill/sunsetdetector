@@ -11,9 +11,9 @@ require 'yaml'
 
 #TODO: fix memory leaks http://stackoverflow.com/questions/958681/how-to-deal-with-memory-leaks-in-rmagick-in-ruby
 
-#TODO: include processing time in sleep amount 
+#TODO: tweet gif of the day's photos.
 
-#TODO: gif all of a day's photos, (compress) and tweet.
+#TODO: figure out fast fourier transform thing.
 
 #good settings: 
   #gain: 20; brightness: 90, contrast: 30, saturation: 50, sunsettiness: 0.135144, threshold: pic.twitter.com/2xfniujNUN
@@ -27,8 +27,8 @@ CONTRAST = ENV['CONTRAST'] || 50
 GAIN = ENV['GAIN'] || 0
 #CAPTURE_CMD = "uvccapture -S#{SATURATION} -B#{BRIGHTNESS} -C#{CONTRAST} -G#{GAIN} -x1280 -y960" || ENV["CAPTURE_CMD"]
 CAPTURE_OUTPUT_FILENAME = "snap.jpg"
-CAPTURE_CMD = "fswebcam --set contrast=20% --set brightness=20% -r 1280x720 -D 1 -S 3 --no-banner --save #{CAPTURE_OUTPUT_FILENAME}" || ENV["CAPTURE_CMD"]
-
+CAPTURE_CMD = "fswebcam --set contrast=20% --set brightness=30% -r 1280x720 -D 1 -S 3 --no-banner --save #{CAPTURE_OUTPUT_FILENAME}" || ENV["CAPTURE_CMD"]
+#for the spreadsheeted data, contrast and birghtness were both 20.
 
 class SunsetDetector
   include ColorCounter
@@ -50,7 +50,7 @@ class SunsetDetector
       config.oauth_token_secret = acct_auth_details["accessSecret"]
     end
 
-    self.how_often_to_take_a_picture = self.debug ? 3 : 1 #minutes
+    self.how_often_to_take_a_picture = self.debug ? 1 : 1 #minutes
     self.previous_sunset = nil
   end
 
@@ -114,7 +114,7 @@ class SunsetDetector
 
   def detect_sunset(photo)
     #tweet only if this is a local maximum in sunsettiness.
-    unless self.debug
+    #unless self.debug
       if self.previous_sunset && (!photo.is_a_sunset?  || self.previous_sunset > photo)
         self.previous_sunset.tweet(previous_sunset.test ? "here's a test sunset" : "Here's tonight's sunset: ")
         self.previous_sunset = nil
@@ -127,14 +127,14 @@ class SunsetDetector
         puts "nope, no sunset"
         photo.move("photos/not_a_#{File.basename(photo.filename)}")
       end
-    else
-      if photo.is_a_sunset?
-        photo.tweet("sunsettiness: #{photo.sunsettiness.to_s[0..7]}, threshold: #{photo.sunset_proportion_threshold.to_s[0..7]}")
-        highlighted_photo = ColorCounter.highlight_sunsety_colors(photo.filename)
-        Twitter.update_with_media("highlighted, sunsettiness: #{photo.sunsettiness.to_s[0..7]}", open(highlighted_photo).read )
-        photo.move("photos/not_a_#{File.basename(photo.filename)}") unless photo.is_a_sunset?
-      end
-    end
+    # else
+    #   if photo.is_a_sunset?
+    #     photo.tweet("sunsettiness: #{photo.sunsettiness.to_s[0..7]}, threshold: #{photo.sunset_proportion_threshold.to_s[0..7]}")
+    #     highlighted_photo = ColorCounter.highlight_sunsety_colors(photo.filename)
+    #     Twitter.update_with_media("highlighted, sunsettiness: #{photo.sunsettiness.to_s[0..7]}", open(highlighted_photo).read )
+    #     photo.move("photos/not_a_#{File.basename(photo.filename)}") unless photo.is_a_sunset?
+    #   end
+    # end
 
   end
 
@@ -154,6 +154,10 @@ class SunsetDetector
       nil
     end
   end
+
+  def fourier_transform
+
+
 end
 if __FILE__ == $0
   s = SunsetDetector.new(ENV['DEBUG'] || false)
