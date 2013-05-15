@@ -159,7 +159,7 @@ class SunsetDetector
 
   def fourier_transform
 
-
+  end
 end
 if __FILE__ == $0
   s = SunsetDetector.new(ENV['DEBUG'] || false)
