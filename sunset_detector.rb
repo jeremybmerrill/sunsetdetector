@@ -132,6 +132,7 @@ class SunsetDetector
         begin
           self.previous_sunsets.last.tweet(self.previous_sunsets.last.test ? "here's a test sunset" : "Here's tonight's sunset: ")
         rescue Twitter::Error::ClientError
+          puts "Heckit! Reconfiguring Twitter."
           self.configure_twitter!
           retry
         end
