@@ -32,7 +32,7 @@ CAPTURE_CMD = "fswebcam --set contrast=20% --set brightness=30% -r 1280x720 -D 1
 
 class SunsetDetector
   include ColorCounter
-  attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_sunset, :debug, :gain, :contrast, :brightness, :saturation, :gif_temp_dir, :acct_auth_details
+  attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_sunsets, :debug, :gain, :contrast, :brightness, :saturation, :gif_temp_dir, :acct_auth_details
 
   SUNSET_THRESHOLD = 0.04
 
@@ -48,7 +48,7 @@ class SunsetDetector
     self.configure_twitter!
 
     self.how_often_to_take_a_picture = self.debug ? 1 : 1 #minutes
-    self.previous_sunset = nil
+    self.previous_sunsets = nil
   end
 
   def configure_twitter!
@@ -90,6 +90,8 @@ class SunsetDetector
   def gifify_todays_sunset
     #find the latest sunset
     #gif everything in the previous hour
+    
+    raise NeedsToBeFixedToWorkWithArrayOfPreviousSunsetsError
     if self.previous_sunset
       most_recent_sunset_time = self.previous_sunset.gsub("photos/sunset_", "").gsub(".jpg", "")
     else
@@ -118,22 +120,27 @@ class SunsetDetector
     FileUtils.rm_r(self.gif_temp_dir)
   end
 
+  def should_tweet_now?(most_recent_photo)
+    self.previous_sunsets && self.previous_sunsets[-15..-1].count{|photo| photo > most_recent_photo} > 10 && most_recent_photo.is_a_sunset?
+  end
+
   def detect_sunset(photo)
     #tweet only if this is a local maximum in sunsettiness.
     #unless self.debug
-      if self.previous_sunset && (!photo.is_a_sunset?(SUNSET_THRESHOLD)  || self.previous_sunset > photo)
+      if should_tweet_now?(photo)
+
         begin
-          self.previous_sunset.tweet(previous_sunset.test ? "here's a test sunset" : "Here's tonight's sunset: ")
+          self.previous_sunsets.last.tweet(self.previous_sunsets.last.test ? "here's a test sunset" : "Here's tonight's sunset: ")
         rescue Twitter::Error::ClientError
           self.configure_twitter!
           retry
         end
-        self.previous_sunset = nil
+
         #self.delete_old_non_sunsets #heh, there's hella memory on this memory card.
       end
       if photo.is_a_sunset?(SUNSET_THRESHOLD)
           puts "that was a sunset"
-          self.previous_sunset = photo
+          self.previous_sunset << photo
       else
         puts "nope, no sunset"
         photo.move("photos/not_a_#{File.basename(photo.filename)}")
