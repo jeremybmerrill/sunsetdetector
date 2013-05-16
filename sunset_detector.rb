@@ -32,7 +32,7 @@ CAPTURE_CMD = "fswebcam --set contrast=20% --set brightness=30% -r 1280x720 -D 1
 
 class SunsetDetector
   include ColorCounter
-  attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_sunset, :debug, :gain, :contrast, :brightness, :saturation, :gif_temp_dir
+  attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_sunset, :debug, :gain, :contrast, :brightness, :saturation, :gif_temp_dir, :acct_auth_details
 
   SUNSET_THRESHOLD = 0.04
 
@@ -40,20 +40,24 @@ class SunsetDetector
     self.debug = debug
     puts "I'm in debug mode!" if self.debug
     auth_details = YAML.load(open("authdetails.yml", 'r').read)
-    acct_auth_details = auth_details[self.debug ? "debug" : "default"]
-    self.twitter_account = acct_auth_details["handle"]
+    self.acct_auth_details = auth_details[self.debug ? "debug" : "default"]
+    self.twitter_account = self.acct_auth_details["handle"]
 
     self.gif_temp_dir = "gif_temp"
 
-    Twitter.configure do |config|
-      config.consumer_key = acct_auth_details["consumerKey"]
-      config.consumer_secret = acct_auth_details["consumerSecret"]
-      config.oauth_token = acct_auth_details["accessToken"]
-      config.oauth_token_secret = acct_auth_details["accessSecret"]
-    end
+    self.configure_twitter!
 
     self.how_often_to_take_a_picture = self.debug ? 1 : 1 #minutes
     self.previous_sunset = nil
+  end
+
+  def configure_twitter!
+    Twitter.configure do |config|
+      config.consumer_key = self.acct_auth_details["consumerKey"]
+      config.consumer_secret = self.acct_auth_details["consumerSecret"]
+      config.oauth_token = self.acct_auth_details["accessToken"]
+      config.oauth_token_secret = self.acct_auth_details["accessSecret"]
+    end
   end
 
   def perform
@@ -118,7 +122,12 @@ class SunsetDetector
     #tweet only if this is a local maximum in sunsettiness.
     #unless self.debug
       if self.previous_sunset && (!photo.is_a_sunset?(SUNSET_THRESHOLD)  || self.previous_sunset > photo)
-        self.previous_sunset.tweet(previous_sunset.test ? "here's a test sunset" : "Here's tonight's sunset: ")
+        begin
+          self.previous_sunset.tweet(previous_sunset.test ? "here's a test sunset" : "Here's tonight's sunset: ")
+        rescue Twitter::Error::ClientError
+          self.configure_twitter!
+          retry
+        end
         self.previous_sunset = nil
         #self.delete_old_non_sunsets #heh, there's hella memory on this memory card.
       end
