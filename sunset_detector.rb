@@ -92,7 +92,7 @@ class SunsetDetector
     #gif everything in the previous hour
     
     raise NeedsToBeFixedToWorkWithArrayOfPreviousSunsetsError
-    if self.previous_sunset
+    if self.previous_sunsets
       most_recent_sunset_time = self.previous_sunset.gsub("photos/sunset_", "").gsub(".jpg", "")
     else
       most_recent_sunset_time = Dir["photos/sunset_*"].sort.last.gsub("photos/sunset_", "").gsub(".jpg", "")
@@ -141,7 +141,7 @@ class SunsetDetector
       end
       if photo.is_a_sunset?(SUNSET_THRESHOLD)
           puts "that was a sunset"
-          self.previous_sunset << photo
+          self.previous_sunsets << photo
       else
         puts "nope, no sunset"
         photo.move("photos/not_a_#{File.basename(photo.filename)}")
