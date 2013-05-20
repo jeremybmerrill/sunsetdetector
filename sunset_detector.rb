@@ -48,7 +48,7 @@ class SunsetDetector
     self.configure_twitter!
 
     self.how_often_to_take_a_picture = self.debug ? 1 : 1 #minutes
-    self.previous_sunsets = nil
+    self.previous_sunsets = []
   end
 
   def configure_twitter!
@@ -92,7 +92,7 @@ class SunsetDetector
     #gif everything in the previous hour
     
     raise NeedsToBeFixedToWorkWithArrayOfPreviousSunsetsError
-    if self.previous_sunsets
+    if self.previous_sunset
       most_recent_sunset_time = self.previous_sunset.gsub("photos/sunset_", "").gsub(".jpg", "")
     else
       most_recent_sunset_time = Dir["photos/sunset_*"].sort.last.gsub("photos/sunset_", "").gsub(".jpg", "")
