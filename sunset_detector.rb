@@ -121,7 +121,7 @@ class SunsetDetector
   end
 
   def should_tweet_now?(most_recent_photo)
-    self.previous_sunsets && self.previous_sunsets[-15..-1].count{|photo| photo > most_recent_photo} > 10 && most_recent_photo.is_a_sunset?
+    self.previous_sunsets[-15..-1] && self.previous_sunsets[-15..-1].count{|photo| photo > most_recent_photo} > 10 && most_recent_photo.is_a_sunset?
   end
 
   def detect_sunset(photo)
