@@ -39,6 +39,7 @@ class SunsetDetector
   def initialize(debug=false)
     self.debug = debug
     puts "I'm in debug mode!" if self.debug
+    puts "I'm in fake mode!" if self.fake
     auth_details = YAML.load(open("authdetails.yml", 'r').read)
     self.acct_auth_details = auth_details[self.debug ? "debug" : "default"]
     self.twitter_account = self.acct_auth_details["handle"]
@@ -49,12 +50,13 @@ class SunsetDetector
       most_recent = Dir["photos/*"].sort_by{ |photo_filename| photo_filename.gsub("photos/not_a_sunset_", "").gsub(".jpg", "").gsub("photos/sunset_","").to_i }[-100..-1]
       most_recent.each{|p| self.most_recent_hundred_photos << Photograph.new(p, true) }
     end
+    puts "done queuing"
 
     self.gif_temp_dir = "gif_temp"
 
     self.configure_twitter!
 
-    self.how_often_to_take_a_picture = self.debug ? 1 : 1 #minutes
+    self.how_often_to_take_a_picture = self.fake ? 0 : 1 #minutes
     self.previous_sunsets = []
   end
 
@@ -79,7 +81,8 @@ class SunsetDetector
       # end
       before_pic_time = Time.now
       if self.fake
-        photo = self.most_recent_hundred_photos.pop
+        photo = self.most_recent_hundred_photos.shift
+        puts "took a photo from the q"
       else
         photo = self.take_a_picture(CAPTURE_CMD)
       end
