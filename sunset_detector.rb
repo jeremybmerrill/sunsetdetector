@@ -32,7 +32,7 @@ CAPTURE_CMD = "fswebcam --set contrast=20% --set brightness=30% -r 1280x720 -D 1
 
 class SunsetDetector
   include ColorCounter
-  attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_sunsets, :debug, :gain, :contrast, :brightness, :saturation, :gif_temp_dir, :acct_auth_details
+  attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_sunsets, :debug, :gain, :contrast, :brightness, :saturation, :gif_temp_dir, :acct_auth_details, :fake, :most_recent_hundred_photos
 
   SUNSET_THRESHOLD = 0.04
 
@@ -42,6 +42,16 @@ class SunsetDetector
     auth_details = YAML.load(open("authdetails.yml", 'r').read)
     self.acct_auth_details = auth_details[self.debug ? "debug" : "default"]
     self.twitter_account = self.acct_auth_details["handle"]
+
+    self.fake = ENV['FAKE'] || false
+    if self.fake
+      require 'thread'
+      self.most_recent_hundred_photos = Queue.new
+      most_recent = Dir["photos/*"].sort_by{ |photo_filename| photo_filename.gsub("photos/not_a_sunset_", "").gsub(".jpg", "").gsub("photos/sunset_","").to_i }[-100..-1]
+      puts most_recent.inspect
+      most_recent.each{|p| self.most_recent_hundred_photos << Photograph.new(p, true) }
+      puts self.most_recent_hundred_photos
+    end
 
     self.gif_temp_dir = "gif_temp"
 
@@ -71,7 +81,11 @@ class SunsetDetector
       #   capture_cmd = "uvccapture -S#{self.saturation} -B#{self.brightness} -C#{self.contrast} -G#{self.gain} -x1280 -y960"
       # end
       before_pic_time = Time.now
-      photo = self.take_a_picture(CAPTURE_CMD)
+      if self.fake
+        photo = self.most_recent_hundred_photos.pop
+      else
+        photo = self.take_a_picture(CAPTURE_CMD)
+      end
       self.detect_sunset(photo) unless photo.nil?
       processing_duration = Time.now - before_pic_time
       time_to_sleep = [(60 * self.how_often_to_take_a_picture) - processing_duration, 0].max
