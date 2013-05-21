@@ -48,7 +48,7 @@ class SunsetDetector
     if self.fake
       self.most_recent_hundred_photos = []
       most_recent = Dir["testphotos/*"].sort_by{ |photo_filename| photo_filename.gsub("testphotos/not_a_sunset_", "").gsub(".jpg", "").gsub("testphotos/sunset_","").to_i }
-      most_recent.each{|p| self.most_recent_hundred_photos << Photograph.new(p, true) }
+      most_recent.each{|p| self.most_recent_hundred_photos << p }
     end
     puts "done queuing"
 
@@ -61,9 +61,9 @@ class SunsetDetector
   end
 
   def create_test_set
-    Dir["photos/*"].sort_by{ |photo_filename| photo_filename.gsub("photos/not_a_sunset_", "").gsub(".jpg", "").gsub("photos/sunset_","").to_i }.each |fn|
-      FileUtils.mkdir("testphotos")
-      FileUtils.mv(fn, fn.gsub("photos", "testphotos"))
+    Dir["photos/*"].sort_by{ |photo_filename| photo_filename.gsub("photos/not_a_sunset_", "").gsub(".jpg", "").gsub("photos/sunset_","").to_i }[-200,-1].each do |fn|
+      FileUtils.mkdir("testphotos") unless Dir.exists?("testphotos")
+      FileUtils.cp(fn, fn.gsub("photos", "testphotos"))
     end
   end
 
@@ -88,8 +88,9 @@ class SunsetDetector
       # end
       before_pic_time = Time.now
       if self.fake
-        photo = self.most_recent_hundred_photos.shift
-        puts "took a photo from the q"
+        photo_fn = self.most_recent_hundred_photos.shift
+        photo = Photograph.new(photo_fn, true)
+        puts "took a photo from the q, sunsettiness: #{photo.sunsettiness}"
       else
         photo = self.take_a_picture(CAPTURE_CMD)
       end
@@ -161,8 +162,8 @@ class SunsetDetector
         #self.delete_old_non_sunsets #heh, there's hella memory on this memory card.
       end
       if photo.is_a_sunset?(SUNSET_THRESHOLD)
-          puts "that was a sunset"
-          self.previous_sunsets << photo
+        puts "that was a sunset"
+        self.previous_sunsets << photo
       else
         puts "nope, no sunset"
         photo.move("photos/not_a_#{File.basename(photo.filename)}") unless self.fake
