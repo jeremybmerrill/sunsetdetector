@@ -39,15 +39,15 @@ class SunsetDetector
   def initialize(debug=false)
     self.debug = debug
     puts "I'm in debug mode!" if self.debug
-    puts "I'm in fake mode!" if self.fake
     auth_details = YAML.load(open("authdetails.yml", 'r').read)
     self.acct_auth_details = auth_details[self.debug ? "debug" : "default"]
     self.twitter_account = self.acct_auth_details["handle"]
 
     self.fake = ENV['FAKE'] || false
+    puts "I'm in fake mode!" if self.fake
     if self.fake
       self.most_recent_hundred_photos = []
-      most_recent = Dir["photos/*"].sort_by{ |photo_filename| photo_filename.gsub("photos/not_a_sunset_", "").gsub(".jpg", "").gsub("photos/sunset_","").to_i }[-100..-1]
+      most_recent = Dir["testphotos/*"].sort_by{ |photo_filename| photo_filename.gsub("testphotos/not_a_sunset_", "").gsub(".jpg", "").gsub("testphotos/sunset_","").to_i }
       most_recent.each{|p| self.most_recent_hundred_photos << Photograph.new(p, true) }
     end
     puts "done queuing"
@@ -56,8 +56,15 @@ class SunsetDetector
 
     self.configure_twitter!
 
-    self.how_often_to_take_a_picture = self.fake ? 0 : 1 #minutes
+    self.how_often_to_take_a_picture = self.fake ? 1 : 1 #minutes
     self.previous_sunsets = []
+  end
+
+  def create_test_set
+    Dir["photos/*"].sort_by{ |photo_filename| photo_filename.gsub("photos/not_a_sunset_", "").gsub(".jpg", "").gsub("photos/sunset_","").to_i }.each |fn|
+      FileUtils.mkdir("testphotos")
+      FileUtils.mv(fn, fn.gsub("photos", "testphotos"))
+    end
   end
 
   def configure_twitter!
@@ -158,7 +165,7 @@ class SunsetDetector
           self.previous_sunsets << photo
       else
         puts "nope, no sunset"
-        photo.move("photos/not_a_#{File.basename(photo.filename)}")
+        photo.move("photos/not_a_#{File.basename(photo.filename)}") unless self.fake
       end
     # else
     #   if photo.is_a_sunset?(SUNSET_THRESHOLD)
