@@ -45,12 +45,9 @@ class SunsetDetector
 
     self.fake = ENV['FAKE'] || false
     if self.fake
-      require 'thread'
-      self.most_recent_hundred_photos = Queue.new
+      self.most_recent_hundred_photos = []
       most_recent = Dir["photos/*"].sort_by{ |photo_filename| photo_filename.gsub("photos/not_a_sunset_", "").gsub(".jpg", "").gsub("photos/sunset_","").to_i }[-100..-1]
-      puts most_recent.inspect
       most_recent.each{|p| self.most_recent_hundred_photos << Photograph.new(p, true) }
-      puts self.most_recent_hundred_photos
     end
 
     self.gif_temp_dir = "gif_temp"
