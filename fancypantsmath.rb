@@ -22,7 +22,7 @@
 require 'gsl'
 
 module FancyPantsMath
-  def do_some_calculus(truncated_data)
+  def FancyPantsMath.do_some_calculus(truncated_data)
     coeff = GSL::Vector.alloc(truncated_data).fft.to_a
     dc_value = coeff.first #y-intercept, whatever.
     coeff_rest = coeff[1..-1]
