@@ -49,8 +49,8 @@ class SunsetDetector
     puts "I'm in fake mode!" if self.fake
     if self.fake
       self.most_recent_hundred_photos = []
-      most_recent = Dir["testphotos/*"].sort_by{ |photo_filename| photo_filename.gsub("testphotos/not_a_sunset_", "").gsub(".jpg", "").gsub("testphotos/sunset_","").to_i }
-      most_recent.each{|p| self.most_recent_hundred_photos << p }
+      self.most_recent_hundred_photos = Dir["testphotos/*"].sort_by{ |photo_filename| photo_filename.gsub("testphotos/not_a_sunset_", "").gsub(".jpg", "").gsub("testphotos/sunset_","").to_i }
+      
     end
     puts "done queuing"
 
@@ -80,8 +80,8 @@ class SunsetDetector
 
   def perform
     #self.detect_sunset(Photograph.new("propublicasunsetfromlena.jpg", true)) #test
-    puts "loopin'"
     loop do
+      puts "loopin'"
       # if self.debug
       #   self.gain = 0 #((0...10).to_a.sample * 10)
       #   self.saturation = 50 #((3...6).to_a.sample * 10)
@@ -97,7 +97,11 @@ class SunsetDetector
       else
         photo = self.take_a_picture(CAPTURE_CMD)
       end
-      photo.nil? ? self.detect_sunset(photo) : puts("photo is nil")
+      unless photo.nil?
+        self.detect_sunset(photo)
+      else
+        puts "photo is nil"
+      end
       processing_duration = Time.now - before_pic_time
       time_to_sleep = [(60 * self.how_often_to_take_a_picture) - processing_duration, 0].max
       sleep time_to_sleep
