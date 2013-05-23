@@ -1,5 +1,8 @@
+# encoding: utf-8
+
 require './count_colors'
 require './photograph'
+require './fancypantsmath'
 require 'fileutils'
 require 'open3'
 require 'twitter'
@@ -12,7 +15,6 @@ require 'yaml'
 #TODO: fix memory leaks http://stackoverflow.com/questions/958681/how-to-deal-with-memory-leaks-in-rmagick-in-ruby
 
 #TODO: tweet gif of the day's photos.
-
 #TODO: figure out fast fourier transform thing.
 
 #good settings: 
@@ -56,7 +58,7 @@ class SunsetDetector
 
     self.configure_twitter!
 
-    self.how_often_to_take_a_picture = self.fake ? 1 : 1 #minutes
+    self.how_often_to_take_a_picture = self.fake ? 0.125 : 1 #minutes
     self.previous_sunsets = []
   end
 
@@ -78,6 +80,7 @@ class SunsetDetector
 
   def perform
     #self.detect_sunset(Photograph.new("propublicasunsetfromlena.jpg", true)) #test
+    puts "loopin'"
     loop do
       # if self.debug
       #   self.gain = 0 #((0...10).to_a.sample * 10)
@@ -94,7 +97,7 @@ class SunsetDetector
       else
         photo = self.take_a_picture(CAPTURE_CMD)
       end
-      self.detect_sunset(photo) unless photo.nil?
+      photo.nil? ? self.detect_sunset(photo) : puts("photo is nil")
       processing_duration = Time.now - before_pic_time
       time_to_sleep = [(60 * self.how_often_to_take_a_picture) - processing_duration, 0].max
       sleep time_to_sleep
@@ -143,7 +146,12 @@ class SunsetDetector
   end
 
   def should_tweet_now?(most_recent_photo)
+    puts "fancypants math says this is " + FancyPantsMath::do_some_calculus(self.previous_sunsets[-60..-1]) ? "" : "not " + "a sunset"
     self.previous_sunsets[-15..-1] && self.previous_sunsets[-15..-1].count{|photo| photo > most_recent_photo} > 10 && most_recent_photo.is_a_sunset?(SUNSET_THRESHOLD)
+  end
+
+  def does_math_say_I_should_tweet_now?(most_recent_photo)
+    FancyPantsMath.do_some_calculus(self.previous_sunsets[-100, -1].map(&:sunsettiness))
   end
 
   def detect_sunset(photo)
@@ -154,7 +162,7 @@ class SunsetDetector
         begin
           self.previous_sunsets.last.tweet(self.previous_sunsets.last.test ? "here's a test sunset" : "Here's tonight's sunset: ")
         rescue Twitter::Error::ClientError
-          puts "Heckit! Reconfiguring Twitter."
+          puts "Heckit! Reconftigyurin Twiter."
           self.configure_twitter!
           retry
         end
@@ -162,10 +170,10 @@ class SunsetDetector
         #self.delete_old_non_sunsets #heh, there's hella memory on this memory card.
       end
       if photo.is_a_sunset?(SUNSET_THRESHOLD)
-        puts "that was a sunset"
+        puts "that was sunsetty"
         self.previous_sunsets << photo
       else
-        puts "nope, no sunset"
+        puts "nope, not sunsetty"
         photo.move("photos/not_a_#{File.basename(photo.filename)}") unless self.fake
       end
     # else

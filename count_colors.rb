@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 #eventually, implement some sort of supervised ML.
 
 require 'RMagick'
