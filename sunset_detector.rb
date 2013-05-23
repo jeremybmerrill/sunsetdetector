@@ -150,7 +150,7 @@ class SunsetDetector
   end
 
   def should_tweet_now?(most_recent_photo)
-    puts "fancypants math says this is " + FancyPantsMath::do_some_calculus(self.previous_sunsets[-60..-1]) ? "" : "not " + "a sunset"
+    puts "fancypants math says this is " + FancyPantsMath::do_some_calculus(self.previous_sunsets[-60..-1]).map(&:sunsettiness)) ? "" : "not " + "a sunset"
     self.previous_sunsets[-15..-1] && self.previous_sunsets[-15..-1].count{|photo| photo > most_recent_photo} > 10 && most_recent_photo.is_a_sunset?(SUNSET_THRESHOLD)
   end
 
