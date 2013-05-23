@@ -6,10 +6,10 @@ class Photograph
   include Comparable
   attr_accessor :filename, :is_a_sunset, :test, :sunsettiness, :sunset_proportion_threshold
 
-  def initialize(filename, test=false)
+  def initialize(filename, is_a_test=false)
     self.filename = filename
     self.is_a_sunset = nil
-    self.test = test
+    self.test = is_a_test
     self.sunsettiness = self.find_sunsettiness
   end
 
@@ -50,7 +50,9 @@ class Photograph
   end
 
   def find_sunsettiness
+    puts "beginning sunsettiness"
     c = ColorCounter::count_sunsetty_colors(self.filename) #optionally, color_distance_threshold can be set here for distance from sunset color points.
+    puts "done with sunsettiness"
     return c[true].to_f / c[false].to_f
   end
 
