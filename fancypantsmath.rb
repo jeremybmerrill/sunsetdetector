@@ -23,11 +23,14 @@ require 'gsl'
 
 module FancyPantsMath
   def FancyPantsMath.do_some_calculus(truncated_data)
+    return false if truncated_data.size < 5
+
     coeff = GSL::Vector.alloc(truncated_data).fft.to_a
     dc_value = coeff.first #y-intercept, whatever.
     coeff_rest = coeff[1..-1]
 
     largest_coeff = coeff_rest.max
+
     index_of_largest_coeff = coeff_rest.index(largest_coeff) + 1 # +1 because we want its index with the dc_value as index 0.
 
     period = coeff.size
@@ -46,7 +49,8 @@ module FancyPantsMath
     first_derivative = lambda{|x| -1 * c * k * 2 * Math::PI / period * Math.sin(k * 2 * Math::PI * x / period)}
     second_derivative = lambda{|x|  -1 * c * ((k * 2 * Math::PI / period) ** 2) * Math.cos(k * 2 * Math::PI * x)}
 
-    return second_derivative(truncated_data.size -1) < 0 && second_derivative(truncated_data.size -1) > 0
+    #the "x" value here is just the location on the timeline; at a frequency of one photo / minute (ish)
+    return second_derivative.call(truncated_data.size() -1) < 0 && second_derivative.call(truncated_data.size() -1) > 0
     ##### CALCULUS 101 ########
     #in general.
     #so given f(x) = cos(2x)

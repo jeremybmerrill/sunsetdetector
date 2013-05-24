@@ -34,7 +34,7 @@ CAPTURE_CMD = "fswebcam --set contrast=20% --set brightness=30% -r 1280x720 -D 1
 
 class SunsetDetector
   include ColorCounter
-  attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_sunsets, :debug, :gain, :contrast, :brightness, :saturation, :gif_temp_dir, :acct_auth_details, :fake, :most_recent_hundred_photos
+  attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_photos, :debug, :gain, :contrast, :brightness, :saturation, :gif_temp_dir, :acct_auth_details, :fake, :most_recent_hundred_photos
 
   SUNSET_THRESHOLD = 0.04
 
@@ -45,7 +45,7 @@ class SunsetDetector
     self.acct_auth_details = auth_details[self.debug ? "debug" : "default"]
     self.twitter_account = self.acct_auth_details["handle"]
 
-    self.fake = ENV['FAKE'] || false
+    $fake = self.fake = ENV['FAKE'] || false
     puts "I'm in fake mode!" if self.fake
     if self.fake
       self.most_recent_hundred_photos = []
@@ -59,7 +59,7 @@ class SunsetDetector
     self.configure_twitter!
 
     self.how_often_to_take_a_picture = self.fake ? 0.125 : 1 #minutes
-    self.previous_sunsets = []
+    self.previous_photos = []
   end
 
   def create_test_set
@@ -150,14 +150,13 @@ class SunsetDetector
   end
 
   def should_tweet_now?(most_recent_photo)
-    num_sunsets = self.previous_sunsets.size
-    puts self.previous_sunsets[-num_sunsets..-1].map(&:sunsettiness).inspect
-    puts "fancypants math says this is " + FancyPantsMath::do_some_calculus(self.previous_sunsets[-num_sunsets..-1].map(&:sunsettiness).compact) ? "" : "not " + "a sunset" if self.previous_sunsets && !self.previous_sunsets[-num_sunsets..-1].empty?
-    self.previous_sunsets[-15..-1] && self.previous_sunsets[-15..-1].count{|photo| photo > most_recent_photo} > 10 && most_recent_photo.is_a_sunset?(SUNSET_THRESHOLD)
+    num_sunsets = self.previous_photos.size
+    puts "fancypants math says this is " + (FancyPantsMath::do_some_calculus(self.previous_photos[-num_sunsets..-1].map(&:sunsettiness).compact) ? "" : "not ") + "a sunset"
+    self.previous_photos[-15..-1] && self.previous_photos[-15..-1].count{|photo| photo > most_recent_photo} > 10 && most_recent_photo.is_a_sunset?(SUNSET_THRESHOLD)
   end
 
   def does_math_say_I_should_tweet_now?(most_recent_photo)
-    FancyPantsMath.do_some_calculus(self.previous_sunsets[-100, -1].map(&:sunsettiness))
+    FancyPantsMath.do_some_calculus(self.previous_photos[-100, -1].map(&:sunsettiness))
   end
 
   def detect_sunset(photo)
@@ -166,7 +165,7 @@ class SunsetDetector
       if should_tweet_now?(photo)
 
         begin
-          self.previous_sunsets.last.tweet(self.previous_sunsets.last.test ? "here's a test sunset" : "Here's tonight's sunset: ")
+          self.previous_photos.last.tweet(self.previous_photos.last.test ? "here's a test sunset" : "Here's tonight's sunset: ")
         rescue Twitter::Error::ClientError
           puts "Heckit! Reconftigyurin Twiter."
           self.configure_twitter!
@@ -177,10 +176,11 @@ class SunsetDetector
       end
       if photo.is_a_sunset?(SUNSET_THRESHOLD)
         puts "that was sunsetty"
-        self.previous_sunsets << photo
+        self.previous_photos << photo
       else
         puts "nope, not sunsetty"
         photo.move("photos/not_a_#{File.basename(photo.filename)}") unless self.fake
+        self.previous_photos << photo
       end
     # else
     #   if photo.is_a_sunset?(SUNSET_THRESHOLD)
