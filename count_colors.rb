@@ -64,10 +64,14 @@ module ColorCounter
 
   def ColorCounter.color_to_8bit(color)
     #e.g. #D6539DF089F4
-    puts color.to_s
-    r = (color[1...5].to_s.to_i(16) / 255)
-    g = (color[5...9].to_s.to_i(16) / 255)
-    b = (color[9...13].to_s.to_i(16) / 255)
+    begin
+      r = (color[1...5].to_s.to_i(16) / 255)
+      g = (color[5...9].to_s.to_i(16) / 255)
+      b = (color[9...13].to_s.to_i(16) / 255)
+    rescue ArgumentError
+      puts color
+      raise ArgumentError
+    end
     [r, g, b]
   end
 
