@@ -41,16 +41,17 @@ module FancyPantsMath
     #showing my work!
     #prettier functions
     sunsettiness_time = "#{dc_value}+#{c}*cos( (#{k}*2π*x) / #{period})"
-    puts sunsettiness_time
     first_derivative_sunsettiness_wrt_time = "-#{c}*(#{k}*2π/#{period})*sin(#{k}*2π*x) / #{period})"
     second_derivative_sunsettiness_wrt_time = "-#{c}*(#{k}*2π/#{period})^2*cos(#{k}*2π*x) / #{period})"
+
     #actual functions
     sunsettiness = lambda{|x| dc_value + largest_coeff * Math.cos( k * 2 * Math::PI * x / period )}
     first_derivative = lambda{|x| -1 * c * k * 2 * Math::PI / period * Math.sin(k * 2 * Math::PI * x / period)}
-    second_derivative = lambda{|x|  -1 * c * ((k * 2 * Math::PI / period) ** 2) * Math.cos(k * 2 * Math::PI * x)}
+    second_derivative = lambda{|x|  -1 * c * ((k * 2 * Math::PI / period) ** 2) * Math.cos(k * 2 * Math::PI * x / period)}
+    puts "#{second_derivative_sunsettiness_wrt_time}; val: #{second_derivative.call(truncated_data.size())}  "
 
     #the "x" value here is just the location on the timeline; at a frequency of one photo / minute (ish)
-    return second_derivative.call(truncated_data.size() -1) < 0 && second_derivative.call(truncated_data.size() -1) > 0
+    return second_derivative.call(truncated_data.size()) < 0 && second_derivative.call(truncated_data.size() -1) > 0
     ##### CALCULUS 101 ########
     #in general.
     #so given f(x) = cos(2x)

@@ -81,7 +81,6 @@ class SunsetDetector
   def perform
     #self.detect_sunset(Photograph.new("propublicasunsetfromlena.jpg", true)) #test
     loop do
-      puts "loopin'"
       # if self.debug
       #   self.gain = 0 #((0...10).to_a.sample * 10)
       #   self.saturation = 50 #((3...6).to_a.sample * 10)

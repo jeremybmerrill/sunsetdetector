@@ -53,9 +53,7 @@ class Photograph
     if $fake
       return rand / 3.2
     end
-    puts "beginning sunsettiness"
     c = ColorCounter::count_sunsetty_colors(self.filename) #optionally, color_distance_threshold can be set here for distance from sunset color points.
-    puts "done with sunsettiness"
     return c[true].to_f / c[false].to_f
   end
 
