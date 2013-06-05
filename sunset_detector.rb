@@ -150,13 +150,14 @@ class SunsetDetector
 
   def should_tweet_now?(most_recent_photo)
     num_sunsets = [self.previous_photos.size, 100].min
-    puts "fancypants math says this is " + (FancyPantsMath::do_some_calculus(self.previous_photos[-num_sunsets..-1].map(&:sunsettiness).compact) ? "" : "not ") + "a sunset"
-    self.previous_photos[-15..-1] && self.previous_photos[-15..-1].count{|photo| photo.sunsettiness > SUNSET_THRESHOLD * 0.75} > 10 && most_recent_photo.is_a_sunset?(SUNSET_THRESHOLD)
+    #puts "fancypants math says this is " + (FancyPantsMath::do_some_calculus(self.previous_photos[-num_sunsets..-1].map(&:sunsettiness).compact) ? "" : "not ") + "a sunset"
+    #self.previous_photos[-15..-1] && self.previous_photos[-15..-1].count{|photo| photo.sunsettiness > SUNSET_THRESHOLD * 0.75} > 10 && most_recent_photo.is_a_sunset?(SUNSET_THRESHOLD)
+    FancyPantsMath::do_some_calculus(self.previous_photos[-num_sunsets..-1].map(&:sunsettiness).compact)
   end
 
-  def does_math_say_I_should_tweet_now?(most_recent_photo)
-    FancyPantsMath.do_some_calculus(self.previous_photos[-100, -1].map(&:sunsettiness))
-  end
+  # def does_math_say_I_should_tweet_now?(most_recent_photo)
+  #   FancyPantsMath.do_some_calculus(self.previous_photos[-100, -1].map(&:sunsettiness))
+  # end
 
   def detect_sunset(photo)
     #tweet only if this is a local maximum in sunsettiness.
