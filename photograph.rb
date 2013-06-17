@@ -45,6 +45,9 @@ class Photograph
     rescue Timeout::Error => te
       puts "TWITER: Heckit! sendin youm messiges failt."
       retry
+    rescue Twitter::Error::ServiceUnavailable
+      puts "TWITER: Heckit! sendin youm messiges failt."
+      retry
     end
     puts "Tweeted: #{status} #{self.filename}"
   end
