@@ -22,7 +22,7 @@
 require 'gsl'
 
 module FancyPantsMath
-  DC_CONSTANT = 1.0
+  DC_CONSTANT = 0.50
   def FancyPantsMath.do_some_calculus(truncated_data)
     return false if truncated_data.size < 5
 
@@ -53,7 +53,7 @@ module FancyPantsMath
     puts "#{second_derivative_sunsettiness_wrt_time}; val: #{second_derivative.call(truncated_data.size())}  "
     puts "dc_value: #{dc_value}"
     #the "x" value here is just the location on the timeline; at a frequency of one photo / minute (ish)
-    return second_derivative.call(truncated_data.size()) < 0 && second_derivative.call(truncated_data.size() -1) > 0 && dc_value > DC_CONSTANT
+    return second_derivative.call(truncated_data.size()) < 0 && second_derivative.call(truncated_data.size() -1) >= 0 && dc_value > DC_CONSTANT
     ##### CALCULUS 101 ########
     #in general.
     #so given f(x) = cos(2x)
