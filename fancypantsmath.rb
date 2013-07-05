@@ -22,7 +22,7 @@
 require 'gsl'
 
 module FancyPantsMath
-  DC_CONSTANT = 0.50
+  DC_CONSTANT = 0.20
   def FancyPantsMath.do_some_calculus(truncated_data)
     return false if truncated_data.size < 5
 
