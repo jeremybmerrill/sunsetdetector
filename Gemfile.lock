@@ -15,7 +15,6 @@ GEM
     rake-compiler (0.8.3)
       rake
     rmagick (2.13.2)
-    ruby-opencv (0.0.8)
     sequel (4.0.0)
     simple_oauth (0.2.0)
     twitter (4.6.2)
@@ -32,6 +31,5 @@ DEPENDENCIES
   mysql2
   rake-compiler
   rmagick
-  ruby-opencv
   sequel
   twitter
