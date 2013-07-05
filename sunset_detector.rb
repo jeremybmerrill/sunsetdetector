@@ -1,11 +1,12 @@
 # encoding: utf-8
 
 require './count_colors'
-require './photograph'
+#require './photograph'
 require './fancypantsmath'
 require 'fileutils'
 require 'open3'
 require 'twitter'
+require 'sequel'
 require 'yaml'
 
 # TODO: 
@@ -23,10 +24,15 @@ require 'yaml'
 
 #creative: "mplayer -vo jpeg -frames 1 -tv driver=v4l2:width=640:height=480:device=/dev/#{interface} tv://"
 #logitech: uvccapture -S80 -B80 -C80 -G80 -x800 -y600 # has 1280x960, is UVC
-SATURATION = ENV['SATURATION'] || 50
-BRIGHTNESS = ENV['BRIGHTNESS'] || 170
-CONTRAST = ENV['CONTRAST'] || 50
-GAIN = ENV['GAIN'] || 0
+#logitech: fswebcam doesn't require settings bullshit.
+
+#TODO: use naive bayes
+
+
+# SATURATION = ENV['SATURATION'] || 50
+# BRIGHTNESS = ENV['BRIGHTNESS'] || 170
+# CONTRAST = ENV['CONTRAST'] || 50
+# GAIN = ENV['GAIN'] || 0
 #CAPTURE_CMD = "uvccapture -S#{SATURATION} -B#{BRIGHTNESS} -C#{CONTRAST} -G#{GAIN} -x1280 -y960" || ENV["CAPTURE_CMD"]
 CAPTURE_OUTPUT_FILENAME = "snap.jpg"
 CAPTURE_CMD = "fswebcam --set contrast=20% --set brightness=30% -r 1280x720 -D 1 -S 3 --no-banner --save #{CAPTURE_OUTPUT_FILENAME}" || ENV["CAPTURE_CMD"]
@@ -34,12 +40,18 @@ CAPTURE_CMD = "fswebcam --set contrast=20% --set brightness=30% -r 1280x720 -D 1
 
 class SunsetDetector
   include ColorCounter
-  attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_photos, :debug, :gain, :contrast, :brightness, :saturation, :gif_temp_dir, :acct_auth_details, :fake, :most_recent_hundred_photos
+  attr_accessor :how_often_to_take_a_picture, :twitter_account, :previous_photos, :debug, :db, :gain, :contrast, :brightness, :saturation, :gif_temp_dir, :acct_auth_details, :fake, :most_recent_hundred_photos
 
   SUNSET_THRESHOLD = 0.04
 
-  def initialize(debug=false)
-    self.debug = debug
+
+  def initialize(how_often_to_take_a_picture=5) #, interface = "video0")
+
+    self.db = Sequel.connect("mysql2://root@localhost/sunsetdetector") #DB = Sequel.connect('postgres://user:password@host:port/database_name')
+    require './photograph' #TODO: gross, but the DB needs to exist before we initialize the Photogrpah object.
+    require './vote'
+    self.debug = DEBUG
+    FileUtils.mkdir_p("photos")
     puts "I'm in debug mode!" if self.debug
     auth_details = YAML.load(open("authdetails.yml", 'r').read)
     self.acct_auth_details = auth_details[self.debug ? "debug" : "default"]
@@ -78,16 +90,22 @@ class SunsetDetector
     end
   end
 
+  def rescan_photographs
+    # populate the table
+    (Dir.glob("photos/sunset_*") + Dir.glob("photos/not_a_sunset_*")).each do |filename|
+      unless Photograph.find(:filename => filename)
+        p = Photograph.find_or_create :filename => filename
+        puts filename.gsub("not_a_sunset_", "").gsub("sunset_", "").gsub(".jpg", "")
+        p.taken = DateTime.strptime(filename.gsub("photos/not_a_sunset_", "").gsub("photos/sunset_", "").gsub(".jpg", ""), "%s")
+        p.sunsettiness = p.find_sunsettiness
+        p.save
+      end
+    end
+  end
+
   def perform
     #self.detect_sunset(Photograph.new("propublicasunsetfromlena.jpg", true)) #test
     loop do
-      # if self.debug
-      #   self.gain = 0 #((0...10).to_a.sample * 10)
-      #   self.saturation = 50 #((3...6).to_a.sample * 10)
-      #   self.contrast = 50 #((3...6).to_a.sample * 10)
-      #   self.brightness = ((5...10).to_a.sample * 10) + 100
-      #   capture_cmd = "uvccapture -S#{self.saturation} -B#{self.brightness} -C#{self.contrast} -G#{self.gain} -x1280 -y960"
-      # end
       before_pic_time = Time.now
       if self.fake
         photo_fn = self.most_recent_hundred_photos.shift
@@ -101,6 +119,12 @@ class SunsetDetector
       else
         puts "photo is nil"
       end
+      new_tweets = self.search_twitter
+      if new_tweets
+        puts "New tweets: " + new_tweets.inspect
+      else
+        #puts "no new tweets :("
+      end 
       processing_duration = Time.now - before_pic_time
       time_to_sleep = [(60 * self.how_often_to_take_a_picture) - processing_duration, 0].max
       sleep time_to_sleep
@@ -108,6 +132,8 @@ class SunsetDetector
   end
 
   def delete_old_non_sunsets
+      #deletes unneeded old photo files (but not DB entries)
+      old_sunsets = Dir.glob("not_a_sunset*")
       old_sunsets = Dir.glob("photos/not_a_sunset*")
       old_sunsets.select{|filename| filename.gsub("not_a_sunset_", "").gsub(".jpg", "").to_i < (Time.now.to_i - 60*60*24)}.each{|f| FileUtils.rm(f) } unless old_sunsets.empty?
   end
@@ -160,18 +186,19 @@ class SunsetDetector
   # end
 
   def detect_sunset(photo)
+    if !self.debug
     #tweet only if this is a local maximum in sunsettiness.
     #unless self.debug
       if should_tweet_now?(photo)
 
         begin
+          #TODO: votes: "I think this is a sunset. Is it? If so, please respond \"Yes\", otherwise, \"No\"."
           self.previous_photos.last.tweet(self.previous_photos.last.test ? "here's a test sunset" : "Here's tonight's sunset: ")
         rescue Twitter::Error::ClientError
           puts "Heckit! Reconftigyurin Twiter."
           self.configure_twitter!
           retry
         end
-
         #self.delete_old_non_sunsets #heh, there's hella memory on this memory card.
       end
       if photo.is_a_sunset?(SUNSET_THRESHOLD)
@@ -190,7 +217,6 @@ class SunsetDetector
     #     photo.move("photos/not_a_#{File.basename(photo.filename)}") unless photo.is_a_sunset?(SUNSET_THRESHOLD)
     #   end
     # end
-
   end
 
   def take_a_picture(capture_cmd = CAPTURE_CMD)
@@ -200,20 +226,41 @@ class SunsetDetector
     _i.close
     _o.close
     _e.close
-    time = Time.now.to_i.to_s
     if(File.exists?(CAPTURE_OUTPUT_FILENAME))
-      FileUtils.move(CAPTURE_OUTPUT_FILENAME, "photos/sunset_#{time}.jpg")
-      Photograph.new("photos/sunset_#{time}.jpg")
+      time = Time.now
+      FileUtils.move(CAPTURE_OUTPUT_FILENAME, "photos/sunset_#{time.to_i}.jpg")
+      Photograph.new("photos/sunset_#{time.to_i}.jpg")
+      p.taken = time
+      p.sunsettiness = p.find_sunsettiness
+      p.save
+      p
     else
       puts "Whoops, couldn't find the photo. Skipping."
       nil
     end
   end
 
-  def fourier_transform
-
+  def search_twitter   
+    #TODO: deal with rate limit.
+    Twitter.mentions_timeline.select do |tweet|
+      if(Vote.where(:tweet_id => tweet.id).empty?)
+        v = Vote.new
+        v.text = tweet.text
+        v.set_value
+        v.username = tweet.from_user_name
+        v.user_id = tweet.from_user_id
+        v.tweet_id = tweet.id
+        v.photograph = Photograph.find(:tweet_id => tweet.in_reply_to_status_id.to_s)
+        v.save
+        puts "\"#{tweet.text}\" is a #{v.value} vote for photo ##{v.photograph_id}, #{Photograph.find(:id => v.photograph_id)}"
+        true
+      else
+        false
+      end
+    end
   end
 end
+
 if __FILE__ == $0
   s = SunsetDetector.new(ENV['DEBUG'] || false)
   s.perform

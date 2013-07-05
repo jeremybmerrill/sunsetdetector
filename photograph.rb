@@ -1,9 +1,12 @@
 require 'fileutils'
+require 'sequel'
 
 class Photograph
   #Look at this photograph
   #every time I do it makes me RT
   include Comparable
+  set_primary_key :id
+  one_to_many :votes
   attr_accessor :filename, :is_a_sunset, :test, :sunsettiness, :sunset_proportion_threshold
 
   def initialize(filename, is_a_test=false)
@@ -41,7 +44,7 @@ class Photograph
     info["lat"] = 40.706996
     info["long"] = -74.013283
     begin
-      Twitter.update_with_media(status, open(self.filename, 'rb').read, info)
+      this_tweet = Twitter.update_with_media(status, open(self.filename, 'rb').read, info)
     rescue Timeout::Error => te
       puts "TWITER: Heckit! sendin youm messiges failt."
       retry
@@ -49,7 +52,9 @@ class Photograph
       puts "TWITER: Heckit! sendin youm messiges failt."
       retry
     end
-    puts "Tweeted: #{status} #{self.filename}"
+    self.tweet_id = this_tweet.id.to_s
+    self.save
+    puts "Tweeted: #{status} #{self.filename}; id ##{this_tweet.id}"
   end
 
   def find_sunsettiness
@@ -59,5 +64,4 @@ class Photograph
     c = ColorCounter::count_sunsetty_colors(self.filename) #optionally, color_distance_threshold can be set here for distance from sunset color points.
     return c[true].to_f / c[false].to_f
   end
-
 end
