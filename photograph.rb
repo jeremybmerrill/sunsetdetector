@@ -1,13 +1,13 @@
 require 'fileutils'
 require 'sequel'
 
-class Photograph
+class Photograph < Sequel::Model
   #Look at this photograph
   #every time I do it makes me RT
   include Comparable
   set_primary_key :id
   one_to_many :votes
-  attr_accessor :filename, :is_a_sunset, :test, :sunsettiness, :sunset_proportion_threshold
+  attr_accessor :filename, :is_a_sunset, :test, :sunsettiness, :sunset_proportion_threshold, :tweet_id
 
   def initialize(filename, is_a_test=false)
     self.filename = filename
@@ -39,7 +39,7 @@ class Photograph
     return self.is_a_sunset
   end
 
-  def tweet(status)
+  def tweet(status, fake=false)
     info = {}
     info["lat"] = 40.706996
     info["long"] = -74.013283
@@ -53,14 +53,11 @@ class Photograph
       retry
     end
     self.tweet_id = this_tweet.id.to_s
-    self.save
+    self.save unless fake
     puts "Tweeted: #{status} #{self.filename}; id ##{this_tweet.id}"
   end
 
   def find_sunsettiness
-    if $fake
-      return rand / 3.2
-    end
     c = ColorCounter::count_sunsetty_colors(self.filename) #optionally, color_distance_threshold can be set here for distance from sunset color points.
     return c[true].to_f / c[false].to_f
   end

@@ -44,38 +44,38 @@ class SunsetDetector
 
   SUNSET_THRESHOLD = 0.04
 
-
-  def initialize(how_often_to_take_a_picture=5) #, interface = "video0")
+  def initialize(debug=false) #, interface = "video0")
 
     self.db = Sequel.connect("mysql2://root@localhost/sunsetdetector") #DB = Sequel.connect('postgres://user:password@host:port/database_name')
     require './photograph' #TODO: gross, but the DB needs to exist before we initialize the Photogrpah object.
     require './vote'
-    self.debug = DEBUG
     FileUtils.mkdir_p("photos")
+
+    self.debug = debug
+    $fake = self.fake = ENV['FAKE'] || false
     puts "I'm in debug mode!" if self.debug
+    puts "I'm in fake mode!" if self.fake
+
     auth_details = YAML.load(open("authdetails.yml", 'r').read)
     self.acct_auth_details = auth_details[self.debug ? "debug" : "default"]
     self.twitter_account = self.acct_auth_details["handle"]
 
-    $fake = self.fake = ENV['FAKE'] || false
-    puts "I'm in fake mode!" if self.fake
     if self.fake
       self.most_recent_hundred_photos = []
       self.most_recent_hundred_photos = Dir["testphotos/*"].sort_by{ |photo_filename| photo_filename.gsub("testphotos/not_a_sunset_", "").gsub(".jpg", "").gsub("testphotos/sunset_","").to_i }
-      
+      puts "done queuing"
     end
-    puts "done queuing"
 
     self.gif_temp_dir = "gif_temp"
 
     self.configure_twitter!
 
-    self.how_often_to_take_a_picture = self.fake ? 0.125 : 1 #minutes
+    self.how_often_to_take_a_picture = self.fake ? 0.0 : 1 #minutes
     self.previous_photos = []
   end
 
   def create_test_set
-    Dir["photos/*"].sort_by{ |photo_filename| photo_filename.gsub("photos/not_a_sunset_", "").gsub(".jpg", "").gsub("photos/sunset_","").to_i }[-200,-1].each do |fn|
+    Dir["photos/*"].sort_by{ |photo_filename| photo_filename.gsub("photos/not_a_sunset_", "").gsub(".jpg", "").gsub("photos/sunset_","").to_i }[-1000..-801].each do |fn|
       FileUtils.mkdir("testphotos") unless Dir.exists?("testphotos")
       FileUtils.cp(fn, fn.gsub("photos", "testphotos"))
     end
@@ -109,6 +109,7 @@ class SunsetDetector
       before_pic_time = Time.now
       if self.fake
         photo_fn = self.most_recent_hundred_photos.shift
+        break unless photo_fn
         photo = Photograph.new(photo_fn, true)
         puts "took a photo from the q, sunsettiness: #{photo.sunsettiness}"
       else
@@ -139,7 +140,6 @@ class SunsetDetector
   end
 
   def gifify_today
-
   end
   def gifify_todays_sunset
     #find the latest sunset
@@ -186,29 +186,28 @@ class SunsetDetector
   # end
 
   def detect_sunset(photo)
-    if !self.debug
     #tweet only if this is a local maximum in sunsettiness.
     #unless self.debug
-      if should_tweet_now?(photo)
-
-        begin
-          #TODO: votes: "I think this is a sunset. Is it? If so, please respond \"Yes\", otherwise, \"No\"."
-          self.previous_photos.last.tweet(self.previous_photos.last.test ? "here's a test sunset" : "Here's tonight's sunset: ")
-        rescue Twitter::Error::ClientError
-          puts "Heckit! Reconftigyurin Twiter."
-          self.configure_twitter!
-          retry
-        end
-        #self.delete_old_non_sunsets #heh, there's hella memory on this memory card.
+    if should_tweet_now?(photo)
+      begin
+        #TODO: votes: "I think this is a sunset. Is it? If so, please respond \"Yes\", otherwise, \"No\"."
+        self.previous_photos[-7].tweet(self.previous_photos.last.test ? "here's a test sunset" : "Here's tonight's sunset: ", self.debug)
+        puts "tweeted!"
+      rescue Twitter::Error::ClientError
+        puts "Heckit! Reconftigyurin Twiter."
+        self.configure_twitter!
+        retry
       end
-      if photo.is_a_sunset?(SUNSET_THRESHOLD)
-        puts "that was sunsetty"
-        self.previous_photos << photo
-      else
-        puts "nope, not sunsetty"
-        photo.move("photos/not_a_#{File.basename(photo.filename)}") unless self.fake
-        self.previous_photos << photo
-      end
+      #self.delete_old_non_sunsets #heh, there's hella memory on this memory card.
+    end
+    if photo.is_a_sunset?(SUNSET_THRESHOLD)
+      puts "that was sunsetty"
+      self.previous_photos << photo
+    else
+      puts "nope, not sunsetty"
+      photo.move("photos/not_a_#{File.basename(photo.filename)}") unless self.fake
+      self.previous_photos << photo
+    end
     # else
     #   if photo.is_a_sunset?(SUNSET_THRESHOLD)
     #     photo.tweet("sunsettiness: #{photo.sunsettiness.to_s[0..7]}, threshold: #{photo.sunset_proportion_threshold.to_s[0..7]}")
@@ -242,6 +241,7 @@ class SunsetDetector
 
   def search_twitter   
     #TODO: deal with rate limit.
+    return false if self.fake
     Twitter.mentions_timeline.select do |tweet|
       if(Vote.where(:tweet_id => tweet.id).empty?)
         v = Vote.new

@@ -27,14 +27,14 @@ module ColorCounter
   end
 
   def ColorCounter.highlight_sunsety_colors(image_filename) #returns new filename
-    magick_image = Image::read(image_filename).first
+    magick_image = Magick::Image::read(image_filename).first
     new_image = magick_image.dup
     magick_image.each_pixel do |pxl, c, r|
       rgb = [pxl.red, pxl.green, pxl.blue].map{|n| n / 257}
       if is_sunsety(rgb)
-        new_pxl = Pixel.new(QuantumRange,QuantumRange,QuantumRange,0)
+        new_pxl = Magick::Pixel.new(Magick::QuantumRange,Magick::QuantumRange,Magick::QuantumRange,0)
       else
-        new_pxl = Pixel.new(0,0,0,0)
+        new_pxl = Magick::Pixel.new(0,0,0,0)
       end
       new_image = new_image.store_pixels(c, r, 1, 1, [new_pxl])
     end
@@ -75,7 +75,8 @@ module ColorCounter
   end
 
   def ColorCounter.count_sunsetty_colors(image_filename, color_distance_threshold=DEFAULT_COLOR_DISTANCE_THRESHOLD)
-    original_image = Image::read(image_filename).first
+    return {false => 1} if image_filename.nil? or image_filename.strip.empty?
+    original_image = Magick::Image::read(image_filename).first
     image = original_image.quantize(32, RGBColorspace)
     original_image.destroy! #heh memleaks.
     image_size = image.columns * image.rows
@@ -87,4 +88,8 @@ module ColorCounter
     image.destroy!
     return Hash[*sunsetty_colors.flatten]
   end
+end
+
+if __FILE__ == $0
+  puts ColorCounter::count_sunsetty_colors("not_a_sunset_1368142918.jpg")
 end

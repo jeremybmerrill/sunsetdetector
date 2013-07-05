@@ -23,13 +23,16 @@ require 'gsl'
 
 module FancyPantsMath
   DC_CONSTANT = 0.20
-  def FancyPantsMath.do_some_calculus(truncated_data)
+  LOOK_BACK_AMOUNT = 7
+
+  def FancyPantsMath.do_some_calculus(truncated_data, look_back_amount=nil)
     return false if truncated_data.size < 5
 
     coeff = GSL::Vector.alloc(truncated_data).fft.to_a
     dc_value = coeff.first #y-intercept, whatever.
     coeff_rest = coeff[1..-1]
 
+    look_back_amount ||= LOOK_BACK_AMOUNT
 
     largest_coeff = coeff_rest.max
 
@@ -42,26 +45,32 @@ module FancyPantsMath
 
     #showing my work!
     #prettier functions
-    sunsettiness_time = "#{dc_value}+#{c}*cos( (#{k}*2π*x) / #{period})"
-    first_derivative_sunsettiness_wrt_time = "-#{c}*(#{k}*2π/#{period})*sin(#{k}*2π*x) / #{period})"
-    second_derivative_sunsettiness_wrt_time = "-#{c}*(#{k}*2π/#{period})^2*cos(#{k}*2π*x) / #{period})"
+    sunsettiness_time = "#{dc_value}+#{c}*cos( (#{k}*2π*x / #{period})"
+    first_derivative_sunsettiness_wrt_time = "-#{c}*(#{k}*2π/#{period})*sin(#{k}*2π*x / #{period})"
+    second_derivative_sunsettiness_wrt_time = "-#{c}*(#{k}*2π/#{period})^2*cos(#{k}*2π*x / #{period})"
 
     #actual functions
     sunsettiness = lambda{|x| dc_value + largest_coeff * Math.cos( k * 2 * Math::PI * x / period )}
     first_derivative = lambda{|x| -1 * c * k * 2 * Math::PI / period * Math.sin(k * 2 * Math::PI * x / period)}
     second_derivative = lambda{|x|  -1 * c * ((k * 2 * Math::PI / period) ** 2) * Math.cos(k * 2 * Math::PI * x / period)}
-    puts "#{second_derivative_sunsettiness_wrt_time}; val: #{second_derivative.call(truncated_data.size())}  "
-    puts "dc_value: #{dc_value}"
+
+    accel_crosses_zero = second_derivative.call(truncated_data.size()-look_back_amount-2) < 0 && (second_derivative.call(truncated_data.size() -look_back_amount-1) < 0 && second_derivative.call(truncated_data.size() -look_back_amount) < 0) &&
+            second_derivative.call(truncated_data.size() -look_back_amount-3) >= 0 && (second_derivative.call(truncated_data.size() -look_back_amount-4) >= 0 && second_derivative.call(truncated_data.size() -look_back_amount-5) >= 0)
+
+    puts "#{second_derivative_sunsettiness_wrt_time}; val: #{second_derivative.call(truncated_data.size()-look_back_amount-2)}  "
+    puts "dc_value: #{dc_value} #{dc_value > DC_CONSTANT ? "okay" : "too low"}"
+    # puts [second_derivative.call(truncated_data.size() -look_back_amount-3), second_derivative.call(truncated_data.size() -look_back_amount-4), second_derivative.call(truncated_data.size() -look_back_amount-5), 
+    #     second_derivative.call(truncated_data.size()-look_back_amount-2), second_derivative.call(truncated_data.size() -look_back_amount-1), second_derivative.call(truncated_data.size() -look_back_amount) ].inspect
+    # puts "crossed zero" if accel_crosses_zero
+    puts "\n"
     #the "x" value here is just the location on the timeline; at a frequency of one photo / minute (ish)
-    return second_derivative.call(truncated_data.size()) < 0 && second_derivative.call(truncated_data.size() -1) >= 0 && dc_value > DC_CONSTANT
+    return dc_value > DC_CONSTANT && accel_crosses_zero
     ##### CALCULUS 101 ########
     #in general.
     #so given f(x) = cos(2x)
     # df/dx = -2sin(2x)
     # then ddf/dx/dx = d/dx d/dx cos(x) = -4cos(2x)
-    #but various constants and things having been flattened, f is changing most rapidly when f'' = 0.
-
-
+    #but various constants and things having been flattened, f is changing most rapidly when f'' = 0. (when f'' is )
 
     #e.g. truncated_coeff = => [1.751297768, 0, 0.9489264930533873, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     #somehow, transform this into a (differentiable) function.
