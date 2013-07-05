@@ -228,9 +228,11 @@ class SunsetDetector
     if(File.exists?(CAPTURE_OUTPUT_FILENAME))
       time = Time.now
       FileUtils.move(CAPTURE_OUTPUT_FILENAME, "photos/sunset_#{time.to_i}.jpg")
-      p = Photograph.new("photos/sunset_#{time.to_i}.jpg")
+      p = Photograph.new #("photos/sunset_#{time.to_i}.jpg")
+      p.filename = "photos/sunset_#{time.to_i}.jpg"
       p.taken = time
       p.sunsettiness = p.find_sunsettiness
+      puts p.inspect
       p.save
       p
     else
