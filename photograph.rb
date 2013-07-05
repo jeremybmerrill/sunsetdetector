@@ -9,12 +9,12 @@ class Photograph < Sequel::Model
   one_to_many :votes
   attr_accessor :filename, :is_a_sunset, :test, :sunsettiness, :sunset_proportion_threshold, :tweet_id, :taken
 
-  def initialize(filename, is_a_test=false)
-    self.filename = filename
-    self.is_a_sunset = nil
-    self.test = is_a_test
-    self.sunsettiness = self.find_sunsettiness
-  end
+  # def initialize(filename, is_a_test=false)
+  #   self.filename = filename
+  #   self.is_a_sunset = nil
+  #   self.test = is_a_test
+  #   self.sunsettiness = self.find_sunsettiness
+  # end
 
   def move(dest)
       FileUtils.move(self.filename, dest)

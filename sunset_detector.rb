@@ -120,12 +120,13 @@ class SunsetDetector
       else
         puts "photo is nil"
       end
-      new_tweets = self.search_twitter
-      if new_tweets
-        puts "New tweets: " + new_tweets.inspect
-      else
-        #puts "no new tweets :("
-      end 
+      #TODO: set up.
+      # new_tweets = self.search_twitter
+      # if new_tweets
+      #   puts "New tweets: " + new_tweets.inspect
+      # else
+      #   #puts "no new tweets :("
+      # end 
       processing_duration = Time.now - before_pic_time
       time_to_sleep = [(60 * self.how_often_to_take_a_picture) - processing_duration, 0].max
       sleep time_to_sleep
