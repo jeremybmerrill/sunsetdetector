@@ -7,7 +7,7 @@ class Photograph < Sequel::Model
   include Comparable
   set_primary_key :id
   one_to_many :votes
-  attr_accessor :filename, :is_a_sunset, :test, :sunsettiness, :sunset_proportion_threshold, :tweet_id
+  attr_accessor :filename, :is_a_sunset, :test, :sunsettiness, :sunset_proportion_threshold, :tweet_id, :taken
 
   def initialize(filename, is_a_test=false)
     self.filename = filename
