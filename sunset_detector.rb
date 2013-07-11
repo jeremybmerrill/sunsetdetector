@@ -175,11 +175,11 @@ class SunsetDetector
     FileUtils.rm_r(self.gif_temp_dir)
   end
 
-  def should_tweet_now?(most_recent_photo)
+  def should_tweet_now?(most_recent_photo, look_back)
     num_sunsets = [self.previous_photos.size, 100].min
     #puts "fancypants math says this is " + (FancyPantsMath::do_some_calculus(self.previous_photos[-num_sunsets..-1].map(&:sunsettiness).compact) ? "" : "not ") + "a sunset"
     #self.previous_photos[-15..-1] && self.previous_photos[-15..-1].count{|photo| photo.sunsettiness > SUNSET_THRESHOLD * 0.75} > 10 && most_recent_photo.is_a_sunset?(SUNSET_THRESHOLD)
-    FancyPantsMath::do_some_calculus(self.previous_photos[-num_sunsets..-1].map(&:sunsettiness).compact)
+    FancyPantsMath::do_some_calculus(self.previous_photos[-num_sunsets..-1].map(&:sunsettiness).compact, look_back)
   end
 
   # def does_math_say_I_should_tweet_now?(most_recent_photo)
@@ -189,10 +189,12 @@ class SunsetDetector
   def detect_sunset(photo)
     #tweet only if this is a local maximum in sunsettiness.
     #unless self.debug
-    if should_tweet_now?(photo)
+    look_back = 7
+
+    if should_tweet_now?(photo, look_back)
       begin
         #TODO: votes: "I think this is a sunset. Is it? If so, please respond \"Yes\", otherwise, \"No\"."
-        self.previous_photos[-7].tweet(self.previous_photos.last.test ? "here's a test sunset" : "Here's tonight's sunset: ", self.debug)
+        self.previous_photos[-look_back].tweet(self.previous_photos.last.test ? "here's a test sunset" : "Here's tonight's sunset: ", self.debug)
         puts "tweeted!"
       rescue Twitter::Error::ClientError
         puts "Heckit! Reconftigyurin Twiter."

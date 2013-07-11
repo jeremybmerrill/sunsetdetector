@@ -57,6 +57,8 @@ module FancyPantsMath
     accel_crosses_zero = second_derivative.call(truncated_data.size()-look_back_amount-2) < 0 && (second_derivative.call(truncated_data.size() -look_back_amount-1) < 0 || second_derivative.call(truncated_data.size() -look_back_amount) < 0) &&
             second_derivative.call(truncated_data.size() -look_back_amount-3) >= 0 && (second_derivative.call(truncated_data.size() -look_back_amount-4) >= 0 || second_derivative.call(truncated_data.size() -look_back_amount-5) >= 0)
 
+    accel_crosses_zero_simple = second_derivative.call(truncated_data.size()-look_back_amount - 1) >= 0 && second_derivative.call(truncated_data.size()-look_back_amount) < 0
+
     puts "#{second_derivative_sunsettiness_wrt_time}; val: #{second_derivative.call(truncated_data.size()-look_back_amount-2)}  "
     puts "dc_value: #{dc_value} #{dc_value > DC_CONSTANT ? "okay" : "too low"} #{accel_crosses_zero ? "crossed zero" : ""}"
     # puts [second_derivative.call(truncated_data.size() -look_back_amount-3), second_derivative.call(truncated_data.size() -look_back_amount-4), second_derivative.call(truncated_data.size() -look_back_amount-5), 
@@ -64,7 +66,7 @@ module FancyPantsMath
     puts 
     puts "\n"
     #the "x" value here is just the location on the timeline; at a frequency of one photo / minute (ish)
-    return dc_value > DC_CONSTANT && accel_crosses_zero
+    return dc_value > DC_CONSTANT && accel_crosses_zero_simple
     ##### CALCULUS 101 ########
     #in general.
     #so given f(x) = cos(2x)
