@@ -66,7 +66,7 @@ module FancyPantsMath
     puts 
     puts "\n"
     #the "x" value here is just the location on the timeline; at a frequency of one photo / minute (ish)
-    return dc_value > DC_CONSTANT && accel_crosses_zero_simple
+    return (dc_value > DC_CONSTANT) && accel_crosses_zero_simple
     ##### CALCULUS 101 ########
     #in general.
     #so given f(x) = cos(2x)

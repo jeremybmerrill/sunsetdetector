@@ -110,7 +110,9 @@ class SunsetDetector
       if self.fake
         photo_fn = self.most_recent_hundred_photos.shift
         break unless photo_fn
-        photo = Photograph.new(photo_fn, true)
+        photo = Photograph.new
+        photo.filename = photo_fn
+        photo.fake = true
         puts "took a photo from the q, sunsettiness: #{photo.sunsettiness}"
       else
         photo = self.take_a_picture(CAPTURE_CMD)
