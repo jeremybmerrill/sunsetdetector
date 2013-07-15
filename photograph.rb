@@ -33,6 +33,7 @@ class Photograph < Sequel::Model
 
   def is_a_sunset?(sunset_proportion_threshold)
     return self.is_a_sunset if (!self.is_a_sunset.nil? && sunset_proportion_threshold == self.sunset_proportion_threshold)
+    self.sunsettiness = self.find_sunsettiness
     self.is_a_sunset = self.sunsettiness > sunset_proportion_threshold
     puts "#{Time.now}: #{self.filename}: #{self.sunsettiness}"
     self.sunset_proportion_threshold = sunset_proportion_threshold
