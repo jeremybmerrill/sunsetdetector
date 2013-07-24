@@ -177,13 +177,15 @@ class SunsetDetector
     FileUtils.rm_r(self.gif_temp_dir)
   end
 
-  def should_tweet_now?(most_recent_photo, look_back)
-    num_sunsets = [self.previous_photos.size, 100].min
+  def should_tweet_now?(most_recent_photo)
+    return false unless self.previous_photos.size % 5 == 0
+
+    amount_of_sunsets = 50
+
+    num_sunsets = [self.previous_photos.size, amount_of_sunsets].min
     #puts "fancypants math says this is " + (FancyPantsMath::do_some_calculus(self.previous_photos[-num_sunsets..-1].map(&:sunsettiness).compact) ? "" : "not ") + "a sunset"
     #self.previous_photos[-15..-1] && self.previous_photos[-15..-1].count{|photo| photo.sunsettiness > SUNSET_THRESHOLD * 0.75} > 10 && most_recent_photo.is_a_sunset?(SUNSET_THRESHOLD)
-    b = FancyPantsMath::do_some_calculus(self.previous_photos[-num_sunsets..-1].map(&:sunsettiness).compact, look_back)
-    puts "should tweet" if b
-    b
+    FancyPantsMath::do_some_calculus(self.previous_photos[-num_sunsets..-1].map(&:find_sunsettiness).compact)
   end
 
   # def does_math_say_I_should_tweet_now?(most_recent_photo)
@@ -193,13 +195,11 @@ class SunsetDetector
   def detect_sunset(photo)
     #tweet only if this is a local maximum in sunsettiness.
     #unless self.debug
-    look_back = 7
-
-    if should_tweet_now?(photo, look_back)
-      puts "I should tweet now"
+    if (sunset_index = should_tweet_now?(photo))
+      puts "I should tweet now ##{sunset_index}."
       begin
         #TODO: votes: "I think this is a sunset. Is it? If so, please respond \"Yes\", otherwise, \"No\"."
-        self.previous_photos[-look_back].tweet(self.previous_photos.last.test ? "here's a test sunset" : "Here's tonight's sunset: ", self.debug)
+        self.previous_photos[-FancyPantsMath::IMAGES_TO_CONSIDER + sunset_index].tweet(self.previous_photos.last.test ? "here's a test sunset" : "Here's tonight's sunset: ", self.debug)
         puts "tweeted!"
       rescue Twitter::Error::ClientError
         puts "Heckit! Reconftigyurin Twiter."
@@ -208,14 +208,16 @@ class SunsetDetector
       end
       #self.delete_old_non_sunsets #heh, there's hella memory on this memory card.
     end
-    if photo.is_a_sunset?(SUNSET_THRESHOLD)
-      puts "that was sunsetty"
-      self.previous_photos << photo
-    else
-      puts "nope, not sunsetty"
-      photo.move("photos/not_a_#{File.basename(photo.filename)}") unless self.fake
-      self.previous_photos << photo
-    end
+    puts "#{Time.now}: #{photo.filename}"
+    self.previous_photos << photo
+    # if photo.is_a_sunset?(SUNSET_THRESHOLD)
+    #   puts "that was sunsetty"
+    #   self.previous_photos << photo
+    # else
+    #   puts "nope, not sunsetty"
+    #   photo.move("photos/not_a_#{File.basename(photo.filename)}") unless self.fake
+    #   self.previous_photos << photo
+    # end
     # else
     #   if photo.is_a_sunset?(SUNSET_THRESHOLD)
     #     photo.tweet("sunsettiness: #{photo.sunsettiness.to_s[0..7]}, threshold: #{photo.sunset_proportion_threshold.to_s[0..7]}")
