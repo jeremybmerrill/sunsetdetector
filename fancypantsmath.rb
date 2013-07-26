@@ -51,7 +51,10 @@ module FancyPantsMath
     first_derivative = lambda{|x| -1 * c * k * 2 * Math::PI / period * Math.sin(k * 2 * Math::PI * x / period)}
     second_derivative = lambda{|x|  -1 * c * ((k * 2 * Math::PI / period) ** 2) * Math.cos(k * 2 * Math::PI * x / period)}
 
+
+
     if dc_value < DC_CONSTANT
+      puts "DC value too low"
       return false
     end
     
@@ -78,6 +81,7 @@ module FancyPantsMath
     puts who_crosses_zero.inspect
 
     if who_crosses_zero.count(true) == 0
+      puts "DC value okay, but nothing crossed zero"
       return false
     elsif who_crosses_zero.count(true) == 1
       index_to_tweet = who_crosses_zero.index(true)
@@ -86,8 +90,7 @@ module FancyPantsMath
       index_to_tweet = who_crosses_zero_amts.index(who_crosses_zero_amts.max)
     end
     puts ["DC: " + dc_value.to_s, "Sunsettiness: " + truncated_data[-IMAGES_TO_CONSIDER + index_to_tweet].to_s ].inspect
-    
-    
+
     if truncated_data[-IMAGES_TO_CONSIDER + index_to_tweet] > 0.0
       return index_to_tweet 
     else
