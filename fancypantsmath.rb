@@ -54,7 +54,7 @@ module FancyPantsMath
 
 
     if dc_value < DC_CONSTANT
-      puts "DC value too low"
+      puts "DC value too low: dc_value"
       return false
     end
     
