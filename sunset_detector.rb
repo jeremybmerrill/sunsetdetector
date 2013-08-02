@@ -119,10 +119,10 @@ class SunsetDetector
       end
       unless photo.nil?
         self.detect_sunset(photo)
+        puts [ photo.test ? "test" : "", photo.filename, photo.sunsettiness, photo.taken.to_s].inspect
       else
         puts "photo is nil"
       end
-      puts [ photo.test ? "test" : "", photo.filename, photo.sunsettiness, photo.taken.to_s].inspect
       #TODO: set up.
       # new_tweets = self.search_twitter
       # if new_tweets
