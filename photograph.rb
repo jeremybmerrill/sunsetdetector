@@ -60,6 +60,7 @@ class Photograph < Sequel::Model
 
   def find_sunsettiness
     c = ColorCounter::count_sunsetty_colors(self.filename) #optionally, color_distance_threshold can be set here for distance from sunset color points.
-    return c[true].to_f / c[false].to_f
+    self.sunsettiness = c[true].to_f / c[false].to_f
+    return self.sunsettiness
   end
 end
