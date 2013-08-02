@@ -117,6 +117,7 @@ class SunsetDetector
       else
         photo = self.take_a_picture(CAPTURE_CMD)
       end
+      puts [ photo.test ? "test" : "", photo.filename, photo.sunsettiness, photo.taken.to_s].inspect
       unless photo.nil?
         self.detect_sunset(photo)
       else
@@ -242,7 +243,6 @@ class SunsetDetector
       p.filename = "photos/sunset_#{time.to_i}.jpg"
       p.taken = time
       p.sunsettiness = p.find_sunsettiness
-      puts p.inspect
       p.save
       p
     else
