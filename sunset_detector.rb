@@ -35,8 +35,8 @@ require 'yaml'
 # GAIN = ENV['GAIN'] || 0
 #CAPTURE_CMD = "uvccapture -S#{SATURATION} -B#{BRIGHTNESS} -C#{CONTRAST} -G#{GAIN} -x1280 -y960" || ENV["CAPTURE_CMD"]
 CAPTURE_OUTPUT_FILENAME = "snap.jpg"
-CAPTURE_CMD = "fswebcam --set contrast=20% --set brightness=30% -r 1280x720 -D 1 -S 3 --no-banner --save #{CAPTURE_OUTPUT_FILENAME}" || ENV["CAPTURE_CMD"]
-#for the spreadsheeted data, contrast and birghtness were both 20.
+CAPTURE_CMD = "fswebcam --set contrast=20% --set brightness=20% -r 1280x720 -D 1 -S 3 --no-banner --save #{CAPTURE_OUTPUT_FILENAME}" || ENV["CAPTURE_CMD"]
+#for the spreadsheeted data, contrast and birghtness were both 20. // brightness was 30 until Aug 5
 
 class SunsetDetector
   include ColorCounter
