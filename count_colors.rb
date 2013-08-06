@@ -5,7 +5,7 @@ require 'RMagick'
 include Magick
 
 module ColorCounter
-  DEFAULT_COLOR_DISTANCE_THRESHOLD = 150
+  DEFAULT_COLOR_DISTANCE_THRESHOLD = 120
 
   def initialize; end
 
