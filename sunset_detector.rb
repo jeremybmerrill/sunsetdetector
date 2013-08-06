@@ -119,7 +119,7 @@ class SunsetDetector
       end
       unless photo.nil?
         self.detect_sunset(photo)
-        puts [ photo.test ? "test" : "", photo.filename, photo.sunsettiness, photo.taken.to_s].inspect
+        puts [ photo.filename, photo.sunsettiness, photo.taken.to_s].inspect
       else
         puts "photo is nil"
       end

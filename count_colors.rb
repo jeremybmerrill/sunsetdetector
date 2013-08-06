@@ -5,7 +5,7 @@ require 'RMagick'
 include Magick
 
 module ColorCounter
-  DEFAULT_COLOR_DISTANCE_THRESHOLD = 100
+  DEFAULT_COLOR_DISTANCE_THRESHOLD = 150
 
   def initialize; end
 
@@ -20,7 +20,7 @@ module ColorCounter
     #sunsety if within $color_distance_threshold units of (255, 55, 0) or (255, 0, 0)
     orangish_red = [255, 200, 0]
     reddish_red = [255, 0, 0]
-    orangereddish_red = [255, 100, 0]
+    orangereddish_red = [255, 100, 50]
     return ColorCounter.distance(rgb, orangish_red) < color_distance_threshold || 
           ColorCounter.distance(rgb, reddish_red) < color_distance_threshold ||
           ColorCounter.distance(rgb, orangereddish_red) < color_distance_threshold
